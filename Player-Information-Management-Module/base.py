@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import random
 
 class AthleteBase(ABC):
     def __init__(self,athlete_id,name,age,sport_branch,status):
@@ -53,7 +54,23 @@ class AthleteBase(ABC):
         return bmi
     
     @classmethod
-    
+    def create_random(cls):
+        names = []
+        surnames = []
+        branches = []
+        statuses = []
+
+        random_id = random.randint(0,9999)
+        random_name = f"{random.choice(names),random.choice(surnames)}"
+        random_age = random.randint(16,40)
+        random_branch = random.choice(branches)
+        random_status = random.choice(statuses)
+
+        return cls(random_id,random_name,random_age,random_branch,random_status)
+
+
+
+
 
 
 
