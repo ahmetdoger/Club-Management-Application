@@ -8,9 +8,9 @@ os.environ["QT_QPA_PLATFORM"] = "xcb"
 
 # --- 2. SENİN VERDİĞİN İMPORTLAR ---
 try:
-    from modules.PlayerInformationPage import PlayerInfoPage
-    from modules.FinancialManagementPage import FinancialPage
-    from modules.MatchPointManagementPage import MatchPointPage
+    from modules.information.PlayerInformationPage import PlayerInfoPage
+    from modules.finance.FinancialManagementPage import FinancialPage
+    from modules.match_point.MatchPointManagementPage import MatchPointPage
     print("✅ Modüller başarıyla yüklendi.")
 except ImportError as e:
     print(f"❌ İMPORT HATASI: {e}")
