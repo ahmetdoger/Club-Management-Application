@@ -2,12 +2,13 @@ from abc import ABC, abstractmethod
 import random
 
 class AthleteBase(ABC):
-    def __init__(self,athlete_id,name,age,sport_branch,status):
+    def __init__(self,athlete_id,name,age,sport_branch,status,strong_side):
         self.__athlete_id = athlete_id
         self.__name = name
         self.__age = age
         self.__sport_branch = sport_branch
         self.__status = status
+        self.__strong_side = strong_side
 
     @property
     def athlete_id(self):
@@ -44,7 +45,15 @@ class AthleteBase(ABC):
             self.__status = new_status
         else:
             raise ValueError(f"Lütfen geçerli bir durum giriniz.") 
-        
+
+    @abstractmethod    
+    def athlete_strong_side(self):
+       pass
+    
+    @abstractmethod
+    def calculate_salary(self):
+        pass
+
     @staticmethod
     def calculate_bmi(weight,height):
         if height <= 0:
@@ -67,6 +76,16 @@ class AthleteBase(ABC):
         random_status = random.choice(statuses)
 
         return cls(random_id,random_name,random_age,random_branch,random_status)
+    
+    def to_dict(self):
+        return {
+            "athlete_id":self.__athlete_id,
+            "name":self.__name,
+            "age":self.__age,
+            "sport_branch":self.__sport_branch,
+            "athlete_strong_side":self.__strong_side,
+            "status":self.__status
+        }
 
 
 
