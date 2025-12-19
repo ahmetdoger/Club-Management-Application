@@ -2,24 +2,33 @@ from .base import AthleteBase
 from datetime import datetime 
 import random
 class ProfessionalAthlete(AthleteBase):
-    def __init__(self, athlete_id, name, age, sport_branch, status,salary,contract_end_date):
-        super().__init__(athlete_id, name, age, sport_branch, status)
+    def __init__(self, athlete_id, name, age, sport_branch, status,strong_side,salary,contract_end_date):
+        super().__init__(athlete_id, name, age, sport_branch, status,strong_side)
         self.__salary = salary
         self.__contract_end_date = contract_end_date
     
-    def calculate_pro_athlete_cost(self):
-        tax = self.calculate_pro_athlete_cost(self.__salary)
+    def calculate_salary(self):
+        tax = self.calculate_tax(self.__salary)
         insurance_cost = 0
         return self.__salary + tax + insurance_cost
     
     def athlete_strong_side(self):
-        branch = self.sport_branch
+        branch = self.sport_branch.lower()
+        side = self.strong_side
         if "football" in branch:
-            return f"Preferred Foot : {self.__athlete_strong_side}"
-        elif "basketball" or "volleyball" in branch:
-            return f"Shooting Hand: {self.__athlete_strong_side}"
+            return f"Preferred Foot : {side}"
+        elif "basketball" in branch or "volleyball" in branch:
+            return f"Shooting Hand: {side}"
         else:
-            return f"Dominant Side: {self.__athlete_strong_side}"
+            return f"Dominant Side: {side}"
+    def to_dict(self):
+        data = super().to_dict()
+        data.update({"type": "ProfessionalAthlete",
+            "salary": self.__salary,
+            "contract_end_date": self.__contract_end_date,
+            "total_cost": self.calculate_salary()
+        })
+        return data    
         
 @property
 def salary(self):
@@ -73,24 +82,33 @@ def renew_contract(cls, current_athlete_data, performance_stats):
         )
 
 class AmateurAthlete(AthleteBase):
-    def __init__(self, athlete_id, name, age, sport_branch, status,licence_number):
-        super().__init__(athlete_id, name, age, sport_branch, status)
+    def __init__(self, athlete_id, name, age, sport_branch, status,strong_side,licence_number):
+        super().__init__(athlete_id, name, age, sport_branch, status,strong_side)
         self.__licence_number = licence_number
 
-    def calculate_amateur_athlete_cost(self):
+    def calculate_salary(self):
         base_licence_fee = 0
         transport_support = 0
 
         return base_licence_fee + transport_support
      
     def athlete_strong_side(self):
-        branch = self.sport_branch
+        branch = self.sport_branch.lower()
         if "football" in branch:
             return f"Preferred Foot : {self.__athlete_strong_side}"
-        elif "basketball" or "volleyball" in branch:
+        elif "basketball" in branch or "volleyball" in branch:
             return f"Shooting Hand: {self.__athlete_strong_side}"
         else:
             return f"Dominant Side: {self.__athlete_strong_side}"
+        
+
+    def to_dict(self):
+        data = super().to_dict()
+        data.update({
+            "type": "AmateurAthlete",
+            "licence_number": self.__licence_number
+        })
+        return data    
     
     @staticmethod
     def check_transport_distance(distance_km):
@@ -124,24 +142,33 @@ class AmateurAthlete(AthleteBase):
             has_job=prev_club_doc.get("has_job", False)
         ) 
     
-class YoungAthlete(AthleteBase):
-    def __init__(self, athlete_id, name, age, sport_branch, status,guardian_name,scholarship_amount):
-        super().__init__(athlete_id, name, age, sport_branch, status)
+class YouthAthlete(AthleteBase):
+    def __init__(self, athlete_id, name, age, sport_branch, status,strong_side,guardian_name,scholarship_amount):
+        super().__init__(athlete_id, name, age, sport_branch, status,strong_side)
         self.__guardian_name = guardian_name
         self.__scholarship_amount = scholarship_amount    
     
-    def calculuate_youth_athlete_cost(self):
+    def calculuate_salary(self):
         return self.__scholarship_amount
     
     def athlete_strong_side(self):
         branch = self.sport_branch
         if "football" in branch:
             return f"Preferred Foot : {self.__athlete_strong_side}"
-        elif "basketball" or "volleyball" in branch:
+        elif "basketball" in branch or "volleyball" in branch:
             return f"Shooting Hand: {self.__athlete_strong_side}"
         else:
             return f"Dominant Side: {self.__athlete_strong_side}"
-        
+
+    def to_dict(self):
+        data = super().to_dict()
+        data.update({
+            "type": "YouthAthlete",
+            "guardian_name": self.__guardian_name,
+            "scholarship_amount": self.__scholarship_amount
+        })
+        return data    
+   
     @property
     def guardian_name(self):
         return self.__guardian_name
@@ -151,11 +178,11 @@ class YoungAthlete(AthleteBase):
         if age < 10 :
             return "Minik Takım"
         if age < 13 :
-            return "U12"
+            return "U13"
         if age < 15:
-            return "U14"
+            return "U15"
         if age < 17:
-            return "U16"
+            return "U17"
         if age < 19:
             return "U19"
         return "As takım adayı"
