@@ -1,0 +1,47 @@
+[
+    {
+        "id": 38716,
+        "type": "Friendly",
+        "home": "Galatasaray",
+        "away": "Trabzonspor",
+        "score": "2-1",
+        "status": "Finished",
+        "date": "2025-08-01 19:00"
+    },
+    {
+        "id": 58610,
+        "type": "League",
+        "home": "Galatasaray",
+        "away": "Fenerbahçe",
+        "score": "0-1",
+        "status": "Finished",
+        "date": "2025-08-10 20:00"
+    },
+    {
+        "id": 33839,
+        "type": "League",
+        "home": "Beşiktaş",
+        "away": "Trabzonspor",
+        "score": "1-2",
+        "status": "Finished",
+        "date": "2025-08-10 20:00"
+    },
+    {
+        "id": 14728,
+        "type": "League",
+        "home": "Fenerbahçe",
+        "away": "Beşiktaş",
+        "score": "1-4",
+        "status": "Finished",
+        "date": "2025-08-17 20:00"
+    },
+    {
+        "id": 32850,
+        "type": "Tournament",
+        "home": "Galatasaray",
+        "away": "Beşiktaş",
+        "score": "3-3",
+        "status": "Finished",
+        "date": "2025-09-01 21:00"
+    }
+]
