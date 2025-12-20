@@ -23,7 +23,6 @@ class DataStorageError(FinanceError):
         detail = f"Veri Erişim Hatası: '{file_path}' dosyasına erişilemedi. Sebep: {reason}"
         super().__init__(message=detail, error_code=1003)
 
-
 # Belirlenen tek seferlik işlem limiti aşıldığında gösterilir
 class TransactionLimitExceededError(FinanceError):
     def __init__(self, amount, limit):
@@ -35,3 +34,21 @@ class CategoryMismatchError(FinanceError):
     def __init__(self, t_type, category):
         detail = f"Kategori Uyuşmazlığı: '{t_type}' işlem türü, '{category}' kategorisi ile eşleşmiyor."
         super().__init__(message=detail, error_code=1005)
+
+# Faiz veya Vergi oranı 0 ile 1 arasında değilse gösterilir
+class InvalidRateError(FinanceError):
+    def __init__(self, rate, reason="Oran 0 ile 1 arasında olmalıdır."):
+        detail = f"Geçersiz Oran Değeri: {rate}. {reason}"
+        super().__init__(message=detail, error_code=1010)
+
+# Para birimi formatı hatalıysa gösterilir
+class InvalidCurrencyError(FinanceError):
+    def __init__(self, currency):
+        detail = f"Geçersiz Para Birimi: '{currency}'. Uluslararası 3 harfli kod (örn: TRY, USD) girilmelidir."
+        super().__init__(message=detail, error_code=1011)
+
+# Tarih formatı yanlış girildiyse gösterilir
+class InvalidDateFormatError(FinanceError):
+    def __init__(self, date_str, expected_format="GG-AA-YYYY"):
+        detail = f"Tarih Formatı Hatası: '{date_str}' geçersiz. Beklenen format: {expected_format}"
+        super().__init__(message=detail, error_code=1012)
