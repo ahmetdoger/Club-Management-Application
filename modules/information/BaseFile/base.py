@@ -2,15 +2,16 @@ from abc import ABC, abstractmethod
 import random
 
 class AthleteBase(ABC):
-    def __init__(self,athlete_id,name,age,gender,sport_branch,status,strong_side):
+    def __init__(self,athlete_id,name,age,gender,height,weight,sport_branch,status,strong_side):
         self.__athlete_id = athlete_id
         self.__name = name
         self.__age = age
+        self.height = height
+        self.weight = weight
         self.__gender = gender
         self.__sport_branch = sport_branch
         self.__status = status
         self.__strong_side = strong_side
-
 
     @property
     def athlete_id(self):
@@ -28,12 +29,20 @@ class AthleteBase(ABC):
     def gender(self):
         return self.__gender
     
+    @property
+    def height(self):
+        return self.__height
+
+    @property
+    def weight(self):
+        return self.__weight 
+    
     @age.setter
     def age(self,new_age):
         if isinstance(new_age,int) and 0 < new_age < 100:
             self.__age = new_age
         else:
-            print("Lütfen geçerli bir yaş giriniz.")
+            print("Lütfen geçerli bir yaş giriniz.")       
 
     @property
     def sport_branch(self):
@@ -65,12 +74,13 @@ class AthleteBase(ABC):
         pass
 
     @staticmethod
-    def calculate_bmi(weight,height):
+    def calculate_bmi(weight, height):
+        if height > 3.0: 
+            height = height / 100
+            
         if height <= 0:
             return 0.0
-
-        bmi = weight / height ** 2
-        return bmi
+        return weight / (height ** 2)
     
     @classmethod
     def create_random(cls):
@@ -86,10 +96,12 @@ class AthleteBase(ABC):
         random_name = f"{random.choice(names)} {random.choice(surnames)}"
         random_age = random.randint(16, 40)
         random_gender = random.choice(genders)
+        random_height = random.randint(160, 205)
+        random_weight = random.randint(55, 110)
         random_branch = random.choice(branches)
         random_status = random.choice(statuses)
         random_side = random.choice(sides)
-        return cls(random_id, random_name, random_age, random_gender, random_branch, random_status, random_side)   
+        return cls(random_id, random_name, random_age, random_gender,random_height, random_weight, random_branch, random_status, random_side)   
 
     
     def to_dict(self):
@@ -98,6 +110,8 @@ class AthleteBase(ABC):
             "name":self.__name,
             "age":self.__age,
             "gender":self.__gender,
+            "height": self.__height,
+            "weight": self.__weight,
             "sport_branch":self.__sport_branch,
             "athlete_strong_side":self.__strong_side,
             "status":self.__status

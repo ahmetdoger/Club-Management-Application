@@ -4,25 +4,17 @@ from .repository import AthleteRepository
 from .implementations import ProfessionalAthlete, AmateurAthlete, YouthAthlete
 
 class AthleteService:
-    import random
-from typing import List, Optional
-
-# Guncellenmis sınıfları import ediyoruz
-from .repository import AthleteRepository
-from .implementations import ProfessionalAthlete, AmateurAthlete, YouthAthlete
-
-class AthleteService:
     def __init__(self, repository: AthleteRepository):
         self.repository = repository
 
-    def register_athlete(self, name: str, age: int, gender: str, branch: str, category: str, strong_side: str, **kwargs):
-        """
-        Yeni bir sporcu kaydı oluşturur.
-        Gender: 'Male', 'Female' vb.
-        """
+    def register_athlete(self, name: str, age: int, gender: str,height: int, weight: int, branch: str, category: str, strong_side: str, **kwargs):
+    
         
         if not self.validate_athlete_age(age):
             raise ValueError(f"Hata: {age} yaşı kayıt için uygun değil (5-100 arası).")
+        
+        if height < 100 or height > 250:
+            print(f"Uyarı: Girilen boy ({height} cm) olağandışı.")
 
         
         new_id = random.randint(10000, 99999)
@@ -39,7 +31,9 @@ class AthleteService:
                 athlete_id=new_id,
                 name=name,
                 age=age,
-                gender=gender,  
+                gender=gender,
+                height=height, 
+                weight=weight,  
                 sport_branch=branch,
                 status=default_status,
                 strong_side=strong_side,
@@ -54,7 +48,9 @@ class AthleteService:
                 athlete_id=new_id,
                 name=name,
                 age=age,
-                gender=gender,  
+                gender=gender,
+                height=height, 
+                weight=weight,  
                 sport_branch=branch,
                 status=default_status,
                 strong_side=strong_side,
@@ -69,7 +65,9 @@ class AthleteService:
                 athlete_id=new_id,
                 name=name,
                 age=age,
-                gender=gender,  
+                gender=gender,
+                height=height, 
+                weight=weight,  
                 sport_branch=branch,
                 status=default_status,
                 strong_side=strong_side,
@@ -80,9 +78,9 @@ class AthleteService:
         else:
             raise ValueError(f"Geçersiz Kategori: {category}. (Beklenen: Professional, Amateur, Youth)")
 
-        # 4. Kayıt
+        
         self.repository.add(new_athlete)
-        return f"{name} ({gender}, {category}) başarıyla sisteme eklendi."
+        return f"{name} ({gender}, {category},{height}cm,{weight}kg) başarıyla sisteme eklendi."
 
     def update_athlete_status(self, athlete_id: int, new_status: str):
         athlete = self.repository.get_by_id(athlete_id)
@@ -137,7 +135,7 @@ class AthleteService:
 
     @classmethod
     def get_service_info(cls):
-        return "AthleteService - Sporcu Kayıt ve Takip Modülü v1.1"
+        return "AthleteService - Sporcu Kayıt ve Takip Modülü v1.0"
 
 
 

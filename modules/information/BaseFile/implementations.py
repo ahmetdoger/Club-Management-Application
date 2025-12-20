@@ -2,8 +2,8 @@ from .base import AthleteBase
 from datetime import datetime 
 import random
 class ProfessionalAthlete(AthleteBase):
-    def __init__(self, athlete_id, name, age,gender,sport_branch, status,strong_side,salary,contract_end_date):
-        super().__init__(athlete_id, name, age,gender,sport_branch, status,strong_side)
+    def __init__(self, athlete_id, name, age,gender,height,weight,sport_branch, status,strong_side,salary,contract_end_date):
+        super().__init__(athlete_id, name, age,gender,height,weight,sport_branch, status,strong_side)
         self.__salary = salary
         self.__contract_end_date = contract_end_date
     
@@ -46,7 +46,26 @@ def renew_contract(cls, current_athlete_data, performance_stats):
         name = current_athlete_data.get("name")
         age = current_athlete_data.get("age")
         current_salary = current_athlete_data.get("salary")
-          
+
+        gender = current_athlete_data.get("gender", "Male,Female")
+        strong_side = current_athlete_data.get("athlete_strong_side", "Right,Left,Both")
+
+
+        if "gender" not in current_athlete_data:
+            raise ValueError(f"Hata: {name} için 'gender' verisi eksik!")
+        gender = current_athlete_data["gender"]
+
+
+        if "height" not in current_athlete_data or "weight" not in current_athlete_data:
+             raise ValueError(f"Hata: {name} için boy/kilo verisi eksik!")
+             
+        height = current_athlete_data["height"]
+        weight = current_athlete_data["weight"]
+
+        if "athlete_strong_side" not in current_athlete_data:
+             raise ValueError(f"Hata: {name} için 'strong_side' verisi eksik!")
+        strong_side = current_athlete_data["athlete_strong_side"]
+
         if age >= 38:
             print(f"Sözleşme Yenilenmedi: {name} emeklilik yaşına geldi.")
             return None
@@ -71,19 +90,23 @@ def renew_contract(cls, current_athlete_data, performance_stats):
         print(f"Sözleşme Yenilendi: {name} - Yeni Maaş: {new_salary:.2f} ({duration} Yıl)")
 
         return cls(
-            athlete_id=current_athlete_data.get("id"), # ID değişmez
+            athlete_id=current_athlete_data.get("athlete_id"),
             name=name,
             age=age + 1, 
-            sport_branch=current_athlete_data.get("branch"),
+            gender=gender,
+            height=height, 
+            weight=weight, 
+            sport_branch=current_athlete_data.get("sport_branch"),
             status="Active",
+            strong_side=strong_side,
             salary=new_salary,
-            contract_end_date=new_end_date,
-            dominant_side=current_athlete_data.get("dominant_side")
+            contract_end_date=new_end_date
         )
 
+
 class AmateurAthlete(AthleteBase):
-    def __init__(self, athlete_id, name, age,gender,sport_branch, status,strong_side,licence_number):
-        super().__init__(athlete_id, name, age,gender,sport_branch, status,strong_side)
+    def __init__(self, athlete_id, name, age,gender,height,weight,sport_branch, status,strong_side,licence_number):
+        super().__init__(athlete_id, name, age,gender,height,weight,sport_branch, status,strong_side)
         self.__licence_number = licence_number
 
     def calculate_salary(self):
@@ -95,11 +118,11 @@ class AmateurAthlete(AthleteBase):
     def athlete_strong_side(self):
         branch = self.sport_branch.lower()
         if "football" in branch:
-            return f"Preferred Foot : {self.__athlete_strong_side}"
+            return f"Preferred Foot : {self.strong_side}"
         elif "basketball" in branch or "volleyball" in branch:
-            return f"Shooting Hand: {self.__athlete_strong_side}"
+            return f"Shooting Hand: {self.strong_side}"
         else:
-            return f"Dominant Side: {self.__athlete_strong_side}"
+            return f"Dominant Side: {self.strong_side}"
         
 
     def to_dict(self):
@@ -115,7 +138,7 @@ class AmateurAthlete(AthleteBase):
         return distance_km > 10
      
     @classmethod
-    def transfer_from_local_club(cls, name, age, branch, prev_club_doc):
+    def transfer_from_local_club(cls, name, age,gender,height,weight, branch, prev_club_doc):
         is_cleared = prev_club_doc.get("has_clearance", False)
         
         if not is_cleared:
@@ -136,6 +159,9 @@ class AmateurAthlete(AthleteBase):
             athlete_id=new_id,
             name=name,
             age=age,
+            gender = gender,
+            height = height,
+            weight = weight,
             sport_branch=branch,
             status="Active",
             license_number=license_no,
@@ -143,22 +169,22 @@ class AmateurAthlete(AthleteBase):
         ) 
     
 class YouthAthlete(AthleteBase):
-    def __init__(self, athlete_id, name, age,gender, sport_branch, status,strong_side,guardian_name,scholarship_amount):
-        super().__init__(athlete_id, name, age,gender, sport_branch, status,strong_side)
+    def __init__(self, athlete_id, name, age,gender,height,weight, sport_branch, status,strong_side,guardian_name,scholarship_amount):
+        super().__init__(athlete_id, name, age,gender,height,weight, sport_branch, status,strong_side)
         self.__guardian_name = guardian_name
         self.__scholarship_amount = scholarship_amount    
     
-    def calculuate_salary(self):
+    def calculate_salary(self):
         return self.__scholarship_amount
     
     def athlete_strong_side(self):
         branch = self.sport_branch
         if "football" in branch:
-            return f"Preferred Foot : {self.__athlete_strong_side}"
+            return f"Preferred Foot : {self.strong_side}"
         elif "basketball" in branch or "volleyball" in branch:
-            return f"Shooting Hand: {self.__athlete_strong_side}"
+            return f"Shooting Hand: {self.strong_side}"
         else:
-            return f"Dominant Side: {self.__athlete_strong_side}"
+            return f"Dominant Side: {self.strong_side}"
 
     def to_dict(self):
         data = super().to_dict()
@@ -189,9 +215,17 @@ class YouthAthlete(AthleteBase):
 
     @classmethod
     def register_with_scholarship_calc(cls, student_info, exam_score):
-        
+        required_fields = ["gender", "strong_side", "height", "weight"]
+        for field in required_fields:
+            if field not in student_info:
+                raise ValueError(f"Hata: Burs kaydı için '{field}' bilgisi eksik!")
+            
         name = student_info.get("name")
         age = student_info.get("age")
+        gender =student_info.get("gender")
+        strong_side = student_info.get("strong_side")
+        height = student_info["height"] 
+        weight = student_info["weight"]
         
         if age >= 18:
             print(f"Kayıt Başarısız: {name} (Yaş: {age}) altyapı yaş sınırını aşıyor.")
@@ -214,6 +248,8 @@ class YouthAthlete(AthleteBase):
             athlete_id=random.randint(500, 999),
             name=name,
             age=age,
+            height=height,
+            weight=weight,
             sport_branch=student_info.get("branch", "General"),
             status="Active",
             guardian_name=student_info.get("parent_name"),
