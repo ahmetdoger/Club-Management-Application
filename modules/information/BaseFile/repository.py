@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List, Dict, Union, Optional
+from typing import List, Optional
 
 class AthleteRepository:
 
