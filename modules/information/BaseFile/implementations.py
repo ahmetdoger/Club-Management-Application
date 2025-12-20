@@ -2,8 +2,8 @@ from .base import AthleteBase
 from datetime import datetime 
 import random
 class ProfessionalAthlete(AthleteBase):
-    def __init__(self, athlete_id, name, age, sport_branch, status,strong_side,salary,contract_end_date):
-        super().__init__(athlete_id, name, age, sport_branch, status,strong_side)
+    def __init__(self, athlete_id, name, age,gender,sport_branch, status,strong_side,salary,contract_end_date):
+        super().__init__(athlete_id, name, age,gender,sport_branch, status,strong_side)
         self.__salary = salary
         self.__contract_end_date = contract_end_date
     
@@ -82,8 +82,8 @@ def renew_contract(cls, current_athlete_data, performance_stats):
         )
 
 class AmateurAthlete(AthleteBase):
-    def __init__(self, athlete_id, name, age, sport_branch, status,strong_side,licence_number):
-        super().__init__(athlete_id, name, age, sport_branch, status,strong_side)
+    def __init__(self, athlete_id, name, age,gender,sport_branch, status,strong_side,licence_number):
+        super().__init__(athlete_id, name, age,gender,sport_branch, status,strong_side)
         self.__licence_number = licence_number
 
     def calculate_salary(self):
@@ -143,8 +143,8 @@ class AmateurAthlete(AthleteBase):
         ) 
     
 class YouthAthlete(AthleteBase):
-    def __init__(self, athlete_id, name, age, sport_branch, status,strong_side,guardian_name,scholarship_amount):
-        super().__init__(athlete_id, name, age, sport_branch, status,strong_side)
+    def __init__(self, athlete_id, name, age,gender, sport_branch, status,strong_side,guardian_name,scholarship_amount):
+        super().__init__(athlete_id, name, age,gender, sport_branch, status,strong_side)
         self.__guardian_name = guardian_name
         self.__scholarship_amount = scholarship_amount    
     
@@ -177,14 +177,14 @@ class YouthAthlete(AthleteBase):
     def age_category(age):
         if age < 10 :
             return "Minik Takım"
-        if age < 13 :
-            return "U13"
-        if age < 15:
-            return "U15"
-        if age < 17:
-            return "U17"
-        if age < 19:
-            return "U19"
+        if age < 12:
+            return "U12"
+        if age < 14:
+            return "U14"
+        if age < 16:
+            return "U16"
+        if age < 18:
+            return "U18"
         return "As takım adayı"
 
     @classmethod
