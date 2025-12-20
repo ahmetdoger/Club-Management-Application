@@ -10,7 +10,6 @@ class AthleteRepository:
 
     @property
     def filename(self):
-        """Kullanılan veritabanı dosyasının adını döndürür."""
         return self.__filename
 
    
