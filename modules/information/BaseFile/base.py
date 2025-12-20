@@ -2,13 +2,15 @@ from abc import ABC, abstractmethod
 import random
 
 class AthleteBase(ABC):
-    def __init__(self,athlete_id,name,age,sport_branch,status,strong_side):
+    def __init__(self,athlete_id,name,age,gender,sport_branch,status,strong_side):
         self.__athlete_id = athlete_id
         self.__name = name
         self.__age = age
+        self.__gender = gender
         self.__sport_branch = sport_branch
         self.__status = status
         self.__strong_side = strong_side
+
 
     @property
     def athlete_id(self):
@@ -21,6 +23,10 @@ class AthleteBase(ABC):
     @property
     def age(self):
         return self.__age
+    
+    @property
+    def gender(self):
+        return self.__gender
     
     @age.setter
     def age(self,new_age):
@@ -45,6 +51,10 @@ class AthleteBase(ABC):
             self.__status = new_status
         else:
             raise ValueError(f"Lütfen geçerli bir durum giriniz.") 
+        
+    @property
+    def strong_side(self):
+        return self.__strong_side    
 
     @abstractmethod    
     def athlete_strong_side(self):
@@ -64,24 +74,30 @@ class AthleteBase(ABC):
     
     @classmethod
     def create_random(cls):
-        names = []
-        surnames = []
-        branches = []
-        statuses = []
+        
+        names = ["Ali", "Ayşe", "Mehmet", "Elif", "Can", "Zeynep"]
+        surnames = ["Yılmaz", "Kaya", "Demir", "Çelik", "Şahin", "Öztürk"]
+        branches = ["Football", "Basketball", "Volleyball",]
+        statuses = ["Active", "Injured", "Suspended","TransferListed"]
+        sides = ["Right", "Left","Both"]
+        genders = ["Male", "Female"]
 
-        random_id = random.randint(0,9999)
-        random_name = f"{random.choice(names),random.choice(surnames)}"
-        random_age = random.randint(16,40)
+        random_id = random.randint(1000, 9999)
+        random_name = f"{random.choice(names)} {random.choice(surnames)}"
+        random_age = random.randint(16, 40)
+        random_gender = random.choice(genders)
         random_branch = random.choice(branches)
         random_status = random.choice(statuses)
+        random_side = random.choice(sides)
+        return cls(random_id, random_name, random_age, random_gender, random_branch, random_status, random_side)   
 
-        return cls(random_id,random_name,random_age,random_branch,random_status)
     
     def to_dict(self):
         return {
             "athlete_id":self.__athlete_id,
             "name":self.__name,
             "age":self.__age,
+            "gender":self.__gender,
             "sport_branch":self.__sport_branch,
             "athlete_strong_side":self.__strong_side,
             "status":self.__status
