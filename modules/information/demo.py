@@ -1,8 +1,10 @@
 import os
 import sys
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
-
-sys.path.append(os.getcwd())
+os.chdir(script_dir)
+project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
+sys.path.append(project_root)
 
 from modules.information.implementations import ProfessionalAthlete, AmateurAthlete, YouthAthlete
 from modules.information.services import AthleteService
@@ -104,9 +106,5 @@ def run_demo_scenario():
     print("      DEMO BAŞARIYLA TAMAMLANDI")
     print("================================================================")
     
-    
-    if os.path.exists("athletes_2025.json"):
-        os.remove("athletes_2025.json")
-
 if __name__ == "__main__":
     run_demo_scenario()
