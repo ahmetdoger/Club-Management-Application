@@ -98,7 +98,7 @@ class TestAthleteSystem(unittest.TestCase):
         """Yeni eklenen Class Method'ların testi."""
         print("\n[TEST 6] Class Method ve Senaryo Testi...")
         
-        season_service = AthleteService.start_season_mode(2099)
+        season_service = AthleteService.start_season_mode(2025)
         self.assertIsInstance(season_service, AthleteService)
         
         # Yedekleme testi için önce ana dosyanın var olduğundan emin olalım
