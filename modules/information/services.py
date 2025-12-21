@@ -48,7 +48,7 @@ class AthleteService:
             new_athlete = YouthAthlete(new_id, name, surname, age, gender, height, weight, branch, default_status, strong_side, guardian_name, scholarship_amount)
         else:
             raise ValueError(f"Geçersiz Kategori: {category}")
-
+        
         self.__repository.add(new_athlete)
         return f"{name} {surname} ({category}) sisteme eklendi."
     
@@ -84,7 +84,6 @@ class AthleteService:
                 results.append(athlete)
             elif search_key in a_name or search_key in a_surname:
                 results.append(athlete)
-                
         return results
    
     # Çoklu kriterlere göre filtreleme yapar

@@ -2,8 +2,6 @@ import os
 import sys
 import time
 
-# --- DOSYA YOLU AYARLAMALARI ---
-# Python'un modülleri bulabilmesi için gerekli yol ayarları
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
@@ -13,21 +11,21 @@ from modules.information.repository import AthleteRepository
 from modules.information.services import AthleteService
 from modules.information.errors import ClubManagerError
 
-# Global Servis Değişkeni (Sezon modu ile değişebilir)
 current_service = None
 
+# Terminal ekranını temizleyen fonksiyon
 def clear_screen():
-    """Terminal ekranını temizler."""
     os.system('cls' if os.name == 'nt' else 'clear')
 
+# Uygulama başlığını yazdıran fonksiyon
 def print_header():
     clear_screen()
     print("================================================================")
     print("        SPOR KULÜBÜ YÖNETİM SİSTEMİ - TERMİNAL ARAYÜZÜ")
     print("================================================================")
 
+# Kullanıcıdan belirtilen veri tipinde ve zorunluluk durumuna göre güvenli giriş alan fonksiyon
 def get_input(prompt, type_func=str, required=True):
-    """Kullanıcıdan güvenli veri alma fonksiyonu."""
     while True:
         try:
             value = input(prompt).strip()
@@ -40,15 +38,14 @@ def get_input(prompt, type_func=str, required=True):
         except ValueError:
             print(f"   [!] Hatalı veri tipi. Lütfen geçerli bir {type_func.__name__} giriniz.")
 
+# Bir sporcu nesnesinin temel özelliklerini ve alt sınıfa özgü detaylarını formatlı şekilde ekrana basar
 def show_athlete_details(athlete):
-    """Sporcu bilgilerini formatlı yazdırır."""
     print("-" * 60)
     print(f"ID: {athlete.get('athlete_id')} | {athlete.get('name')} {athlete.get('surname').upper()}")
     print(f"Branş: {athlete.get('sport_branch')} | Kategori: {athlete.get('type')}")
     print(f"Yaş: {athlete.get('age')} | Boy/Kilo: {athlete.get('height')}/{athlete.get('weight')}")
     print(f"Statü: {athlete.get('status')} | Güçlü Taraf: {athlete.get('strong_side')}")
     
-    # Kategoriye özel alanlar
     if athlete.get('type') == 'ProfessionalAthlete':
         print(f"Maaş: {athlete.get('salary'):,.2f} TL | Sözleşme: {athlete.get('contract_end_date')}")
         print(f"Toplam Maliyet (Vergiler Dahil): {athlete.get('total_cost'):,.2f} TL")
@@ -58,8 +55,7 @@ def show_athlete_details(athlete):
         print(f"Veli: {athlete.get('guardian_name')} | Burs: {athlete.get('scholarship_amount')} TL")
     print("-" * 60)
 
-# --- MENÜ FONKSİYONLARI ---
-
+# Kullanıcıdan gerekli bilgileri adım adım alarak sisteme yeni bir sporcu kaydı oluşturan menü fonksiyonu
 def menu_register_athlete():
     print("\n--- YENİ SPORCU KAYDI ---")
     try:
@@ -70,7 +66,7 @@ def menu_register_athlete():
         height = get_input("Boy (cm): ", int)
         weight = get_input("Kilo (kg): ", int)
         branch = get_input("Branş (Football/Basketball/Volleyball vb.): ")
-        strong_side = get_input("Güçlü Taraf (Right/Left): ")
+        strong_side = get_input("Güçlü Taraf (Right/Left/Both): ")
 
         print("\nKategori Seçiniz:")
         print("1. Profesyonel (Maaşlı)")
@@ -83,7 +79,7 @@ def menu_register_athlete():
 
         if cat_choice == 1:
             category = "Professional"
-            kwargs['salary'] = get_input("Maaş Beklentisi: ", float)
+            kwargs['salary'] = get_input("Maaş: ", float)
             kwargs['contract_end_date'] = get_input("Sözleşme Bitiş Tarihi (YYYY-AA-GG): ", required=False)
         elif cat_choice == 2:
             category = "Amateur"
@@ -99,7 +95,6 @@ def menu_register_athlete():
             print("   [!] Geçersiz kategori.")
             return
 
-        # Servis çağrısı
         result = current_service.register_athlete(
             name, surname, age, gender, height, weight, branch, category, strong_side, **kwargs
         )
@@ -113,6 +108,7 @@ def menu_register_athlete():
     
     input("\nDevam etmek için Enter'a basınız...")
 
+# İsim veya ID bilgisine göre sporcu veritabanında arama yapan ve sonuçları listeleyen menü fonksiyonu
 def menu_search_athlete():
     print("\n--- SPORCU ARAMA ---")
     keyword = get_input("Arama Terimi (ID veya İsim): ")
@@ -126,6 +122,7 @@ def menu_search_athlete():
         print("\n   [!] Kayıt bulunamadı.")
     input("\nDevam etmek için Enter'a basınız...")
 
+# Sporcuları branş, yaş, cinsiyet gibi kriterlere göre filtreleyip ekrana yazdıran menü fonksiyonu
 def menu_list_filter():
     print("\n--- LİSTELEME VE FİLTRELEME ---")
     print("1. Tümünü Listele")
@@ -153,11 +150,10 @@ def menu_list_filter():
         print("\n   [!] Kriterlere uygun kayıt yok.")
     input("\nDevam etmek için Enter'a basınız...")
 
+# Sporcunun mevcut durumunu güncelleyen fonksiyon
 def menu_update_status():
     print("\n--- STATÜ GÜNCELLEME ---")
     athlete_id = get_input("Sporcu ID: ", int)
-    
-    # Önce sporcuyu bulup gösterelim
     athlete = current_service.repository.get_by_id(athlete_id)
     if not athlete:
         print("   [!] Sporcu bulunamadı.")
@@ -179,26 +175,23 @@ def menu_update_status():
     
     input("\nDevam etmek için Enter'a basınız...")
 
+# Class method kullanarak sistemi farklı bir sezon yılı ve dosyası için yeniden yapılandıran demo fonksiyonu
 def menu_season_mode():
     print("\n--- SEZON MODU (CLASS METHOD DEMO) ---")
     print("Bu özellik, 'start_season_mode' class metodunu kullanarak")
     print("sistemi farklı bir yıl için (farklı bir veritabanı dosyasıyla) yeniden başlatır.")
     
     year = get_input("Hangi sezonu yönetmek istersiniz? (Örn: 2025, 2026): ", int)
-    
     global current_service
-    # Class method kullanımı
     current_service = AthleteService.start_season_mode(year)
     
     print(f"\n   [BİLGİ] Sistem {year} sezonuna geçiş yaptı.")
     print(f"   Veritabanı Dosyası: athletes_{year}.json")
     input("\nDevam etmek için Enter'a basınız...")
 
-# --- ANA DÖNGÜ ---
-
+# Programın ana döngüsünü, repository başlatmayı ve kullanıcı menü seçimlerini yöneten ana fonksiyon
 def main():
     global current_service
-    # Başlangıçta varsayılan repository ve servisi yükle
     repo = AthleteRepository()
     current_service = AthleteService(repo)
 

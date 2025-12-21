@@ -25,7 +25,7 @@ class ProfessionalAthlete(AthleteBase):
     # Maaşa vergi ve sigorta masrafını ekleyerek toplam maliyeti hesaplar
     def calculate_salary(self):
         tax = self.calculate_tax(self.__salary)
-        insurance_cost = 2500
+        insurance_cost = 5000
         return self.__salary + tax + insurance_cost
 
     # Branşa göre güçlü tarafı yorumlar  
@@ -153,7 +153,7 @@ class AmateurAthlete(AthleteBase):
         is_cleared = prev_club_doc.get("has_clearance", False)
         if not is_cleared:
             raise_clearance_error(name)
-        
+    
         if "strong_side" not in prev_club_doc:
             raise ValueError(f"Hata: Transfer için 'strong_side' bilgisi girilmemiş!")
         strong_side = prev_club_doc["strong_side"]
