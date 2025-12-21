@@ -1,0 +1,34 @@
+[
+    {
+        "athlete_id": 16843,
+        "name": "Ahmet",
+        "surname": "Os",
+        "age": 31,
+        "gender": "Male",
+        "height": 180,
+        "weight": 90,
+        "sport_branch": "Football",
+        "strong_side": "Right",
+        "status": "Active",
+        "type": "ProfessionalAthlete",
+        "salary": 500000.0,
+        "contract_end_date": "2026-10-15",
+        "total_cost": 577500.0
+    },
+    {
+        "athlete_id": 36178,
+        "name": "Ahmet",
+        "surname": "Döğer",
+        "age": 20,
+        "gender": "male",
+        "height": 180,
+        "weight": 90,
+        "sport_branch": "football",
+        "strong_side": "right",
+        "status": "Active",
+        "type": "ProfessionalAthlete",
+        "salary": 50000.0,
+        "contract_end_date": "2027-12-31",
+        "total_cost": 60000.0
+    }
+]
