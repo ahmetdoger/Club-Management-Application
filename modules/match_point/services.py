@@ -87,6 +87,26 @@ class MatchManager:
                 team_matches.append(match)
         return team_matches
 
+
+    
+    def play_match_manually(self, match, home_score, away_score):
+        """
+        Maçı verilen skorla oynatır ve bitirir.
+        Lig maçıysa puan tablosunu günceller.
+        """
+        # Skoru yaz ve bitir
+        match.set_score(f"{home_score}-{away_score}")
+        match.update_status("Finished")
+        
+        # Eğer LİG maçıysa puanları da işle (Turnuvada işleme)
+        # MatchBase içinde type 'League' olarak tutuluyor
+        if getattr(match, "_MatchBase__match_type") == "League":
+            match.get_home_team().update_stats(home_score, away_score)
+            match.get_away_team().update_stats(away_score, home_score)
+            
+        print(f"✅ Manuel Giriş Başarılı: {match.get_match_info()}")
+
+
     # Puan durumu tablosunu oluşturan yardımcı servis.
 class LeagueTable:
 

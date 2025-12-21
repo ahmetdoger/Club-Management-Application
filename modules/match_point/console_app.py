@@ -118,9 +118,52 @@ class ConsoleUI:
     
     # Bekleyen maçların simülasyonunu başlatır.
     def simulate_matches_ui(self):
-        print("\n>>> Maçlar Oynatılıyor...")
-        self.manager.simulate_all_scheduled()
+        print("\n>>> MAÇ SİMÜLASYONU BAŞLIYOR...")
+        
+        # Oynanmamış (Scheduled) maçları çek
+        all_matches = self.manager.get_all_matches()
+        pending_matches = [m for m in all_matches if m.get_status() == "Scheduled"]
+        
+        if not pending_matches:
+            print("❌ Oynanacak bekleyen maç yok.")
+            return
 
+        print(f"Sırada {len(pending_matches)} maç var.\n")
+
+        # Her maç için tek tek sor
+        for match in pending_matches:
+            h_name = match.get_home_team().get_name()
+            a_name = match.get_away_team().get_name()
+            
+            print("-" * 40)
+            print(f"SIRADAKİ MAÇ: {h_name} vs {a_name}")
+            print("-" * 40)
+            print("1. Manuel Skor Gir")
+            print("2. Otomatik Oynat (Rastgele)")
+            
+            choice = input("Seçiminiz (1 veya 2): ")
+            
+            if choice == '1':
+                # --- MANUEL GİRİŞ ---
+                try:
+                    h = int(input(f"{h_name} Golü: "))
+                    a = int(input(f"{a_name} Golü: "))
+                    if h < 0 or a < 0:
+                        print("Hata: Eksi değer giremezsin! Otomatik oynatılıyor...")
+                        match.simulate_match()
+                    else:
+                        # Az önce services.py'ye eklediğimiz fonksiyonu çağırıyoruz
+                        self.manager.play_match_manually(match, h, a)
+                except:
+                    print("Hata: Sayı girmedin! Otomatik oynatılıyor...")
+                    match.simulate_match()
+            else:
+                # --- OTOMATİK ---
+                print(">> Sistem oynatıyor...")
+                match.simulate_match()
+                time.sleep(1) # 1 saniye bekle (Heyecan olsun)
+        
+        print("\n✅ TÜM MAÇLAR TAMAMLANDI!")
     # Güncel puan durumunu ekrana tablo olarak basar.
     def show_standings_ui(self):
         LeagueTable.print_table(self.teams)
