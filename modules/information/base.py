@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 import random
+from .errors import raise_invalid_age_error, ClubManagerError
 
 # Sporcular için temel özellikleri barındıran soyut sınıf
 class AthleteBase(ABC):
     # Sınıfın temel özelliklerini ve değişkenleri başlatır
-    def __init__(self,athlete_id,name,surname,age,gender,height,weight,sport_branch,status,strong_side):
+    def __init__(self, athlete_id, name, surname, age, gender, height, weight, sport_branch, status, strong_side):
         self.__athlete_id = athlete_id
         self.__name = name
         self.__surname = surname
@@ -51,13 +52,13 @@ class AthleteBase(ABC):
     def weight(self):
         return self.__weight 
     
-    # Sporcunun yaşını belirli kurallara göre günceller
+    # Sporcunun yaş bilgisini kurallar çerçevesinde günceller
     @age.setter
-    def age(self,new_age):
-        if isinstance(new_age,int) and 10 < new_age < 50:
-            self.__age = new_age
-        else:
-            print("Lütfen geçerli bir yaş giriniz.")       
+    def age(self, new_age):
+        if not (isinstance(new_age, int) and 10 < new_age < 50):
+            raise_invalid_age_error(new_age)
+            
+        self.__age = new_age
     
     # Sporcunun branşını döndürür
     @property
@@ -69,15 +70,18 @@ class AthleteBase(ABC):
     def status(self):
         return self.__status
     
-    # Sporcunu durumununu izin verilen durumlara günceller
+    # Sporcunun statüsünü geçerli değerlerle günceller
     @status.setter
-    def status(self,new_status):
-        current_status = ["Active","Injured","Suspended","Retired","TransferListed","Excluded"]
-
+    def status(self, new_status):
+        current_status = ["Active", "Injured", "Suspended", "Retired", "TransferListed", "Excluded"]
         if new_status in current_status:
             self.__status = new_status
         else:
-            raise ValueError(f"Lütfen geçerli bir durum giriniz.") 
+            raise ClubManagerError(
+                message=f"Geçersiz statü: '{new_status}'. Beklenenler: {current_status}",
+                error_type="ValidationError",
+                error_code=2005
+            )
 
     # Sporcunun güçlü tarafını döndürür    
     @property
@@ -104,10 +108,9 @@ class AthleteBase(ABC):
             return 0.0
         return weight / (height ** 2)
     
-    #  Rastgele özelliklere sahip bir sporcu nesnesi oluşturur
+    # Rastgele verilerle bir sporcu örneği oluşturur
     @classmethod
     def create_random(cls):
-        
         names = ["Ali", "Ayşe", "Mehmet", "Elif", "Can", "Zeynep"]
         surnames = ["Yılmaz", "Kaya", "Demir", "Çelik", "Şahin", "Öztürk"]
         branches = ["Football", "Basketball", "Volleyball",]
@@ -125,28 +128,25 @@ class AthleteBase(ABC):
         random_branch = random.choice(branches)
         random_status = random.choice(statuses)
         random_side = random.choice(sides)
-        return cls(random_id, random_name,random_surname, random_age, random_gender,random_height, random_weight, random_branch, random_status, random_side)   
+        
+       
+        return cls(random_id, random_name, random_surname, random_age, random_gender, 
+                   random_height, random_weight, random_branch, random_status, random_side)   
 
     # Sporcu bilgilerini sözlük formatına döndürür
     def to_dict(self):
         return {
-            "athlete_id":self.__athlete_id,
-            "name":self.__name,
-            "surname":self.__surname,
-            "age":self.__age,
-            "gender":self.__gender,
+            "athlete_id": self.__athlete_id,
+            "name": self.__name,
+            "surname": self.__surname,
+            "age": self.__age,
+            "gender": self.__gender,
             "height": self.__height,
             "weight": self.__weight,
-            "sport_branch":self.__sport_branch,
-            "strong_side":self.__strong_side,
-            "status":self.__status
+            "sport_branch": self.__sport_branch,
+            "strong_side": self.__strong_side,
+            "status": self.__status
         }
-
-
-
-
-
-
 
 
 
