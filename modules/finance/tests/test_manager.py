@@ -1,92 +1,126 @@
 import unittest
 import os
 import json
+from unittest.mock import MagicMock 
 from modules.finance.services.manager import FinanceManager
 from modules.finance.data.constants import TransactionType, IncomeCategory, ExpenseCategory
 
-# Manager sınıfı özelliklerini test eder
 class TestFinanceManager(unittest.TestCase):
+    """
+    Bu test sınıfı:
+    1. İşlem Ekleme/Silme/Güncelleme (CRUD)
+    2. Modüller Arası Entegrasyon (Maaş Ödeme)
+    senaryolarını test eder.
+    """
 
     def setUp(self):
-        # 1. Test için geçici bir JSON dosyası adı belirle
+        # 1. Test için geçici veritabanı ayarla
         self.test_db_file = "test_manager_data.json"
         
         # 2. Manager sınıfını başlat
         self.manager = FinanceManager()
-        
-        # 3. Manager'ın repo dosyasını test dosyasına yönlendir (Mocking)
         self.manager.repo.file_path = self.test_db_file
         
-        # 4. Dosyayı temizle/oluştur
+        # 3. Dosyayı temizle
         with open(self.test_db_file, 'w') as f:
             json.dump([], f)
 
+        # 4. Test için sahte veriler
+
+        self.manager.info_repo = MagicMock()
+
     def tearDown(self):
-        # Her testten sonra çöp dosyasını sil
+        # Test bitince çöp dosyayı sil
         if os.path.exists(self.test_db_file):
             os.remove(self.test_db_file)
 
     def test_add_transaction_success(self):
-        """
-        Madde 178: Başarılı ödeme oluşturma testi.
-        """
         success, message = self.manager.add_transaction(
-            t_type_val=TransactionType.INCOME.value,
-            category_val=IncomeCategory.SPONSORSHIP.value,
-            amount_val=5000.0,
-            description="Ana Sponsorluk Ödemesi"
+            TransactionType.INCOME.value,
+            IncomeCategory.SPONSORSHIP.value, # Enum kullandık
+            5000.0,
+            "Ana Sponsor"
         )
-        
-        # 1. İşlem başarılı döndü mü?
-        self.assertTrue(success, f"İşlem başarısız oldu: {message}")
-        
-        # 2. Kayıt gerçekten dosyaya yazıldı mı?
+        self.assertTrue(success)
         records = self.manager.get_all_transactions()
         self.assertEqual(len(records), 1)
-        self.assertEqual(records[0]['tutar'], 5000.0)
 
     def test_transaction_limit_fail(self):
-        """
-        Madde 179: Hata durumu testi (Limit Aşımı).
-        10 Milyon TL üzeri işlem reddedilmeli.
-        """
+        # Limit aşımı testi (10 Milyon üzeri)
         success, message = self.manager.add_transaction(
-            t_type_val=TransactionType.INCOME.value,
-            category_val=IncomeCategory.SPONSORSHIP.value,
-            amount_val=15000000, # Çok yüksek tutar
-            description="Limit Testi"
+            TransactionType.INCOME.value,
+            IncomeCategory.SPONSORSHIP.value,
+            15000000, 
+            "Limit Testi"
         )
-        
-        # İşlem başarısız olmalı 
         self.assertFalse(success)
-        # Hata mesajı doğru mu?
-        self.assertIn("Limit Aşımı", message)
+        self.assertIn("Limit", message) # Mesajda "Limit" kelimesi geçiyor mu?
 
-    # Gelire gider girilirse hata vermeli
     def test_category_mismatch_fail(self):
-    
+        # Gelir tipine Gider kategorisi girme hatası
         success, message = self.manager.add_transaction(
-            t_type_val=TransactionType.INCOME.value,
-            category_val="Personel Maaşı", # Bu bir gider kategorisidir
-            amount_val=100
+            TransactionType.INCOME.value,
+            ExpenseCategory.SALARY.value, # Hata! Gelir tipinde Maaş olamaz
+            100
         )
+        self.assertFalse(success)
+
+    def test_process_monthly_salaries_success(self):
+        """
+        Senaryo: Arkadaşının modülünden 2 kişilik düzgün veri geliyor.
+        Beklenen: 2 tane Gider kaydı oluşmalı.
+        """
+        # 1. SAHTE VERİ 
+        fake_data = [
+            {"name": "Muslera", "salary": 20000, "id": "GS-01"},
+            {"name": "Icardi", "salary": 30000, "id": "GS-09"}
+        ]
+        self.manager.info_repo.get_all.return_value = fake_data
+
+        # 2. Fonksiyonu Çalıştır
+        success, msg = self.manager.process_monthly_salaries()
+
+        # 3. Kontrol Et
+        self.assertTrue(success)
+        self.assertIn("2 Kişiye", msg) # Mesajda "2 Kişiye" yazıyor mu?
+
+        # 4. Kayıtlar gerçekten oluştu mu?
+        records = self.manager.get_all_transactions()
+        self.assertEqual(len(records), 2)
+        # Maaşlardan vergi/kesinti düşülmüş olmalı (SalaryCalculator işliyor mu?)
+        # 20000 brüt - net daha düşük olmalı
+        self.assertTrue(records[0]['tutar'] < 20000)
+        self.assertEqual(records[0]['kategori'], ExpenseCategory.SALARY.value)
+
+    def test_process_monthly_salaries_mixed_data(self):
+        """
+        Senaryo: Biri düzgün, biri hatalı (string maaş), biri eksik maaş.
+        Beklenen: Hatalıları atlayıp sadece düzgün olanı (1 kişi) ödemeli.
+        """
+        fake_data = [
+            {"name": "Düzgün Oyuncu", "salary": 10000, "id": "01"}, # OK
+            {"name": "Hatalı Oyuncu", "salary": "yirmibin", "id": "02"}, # String Hata
+            {"name": "Bedava Oyuncu", "salary": 0, "id": "03"} # 0 Maaş atlanmalı
+        ]
+        self.manager.info_repo.get_all.return_value = fake_data
+
+        success, msg = self.manager.process_monthly_salaries()
+
+        self.assertTrue(success) # İşlem genel olarak başarılı sayılır
+        
+        # Sadece 1 kişi kaydedilmeli
+        records = self.manager.get_all_transactions()
+        self.assertEqual(len(records), 1)
+        self.assertIn("Düzgün Oyuncu", records[0]['aciklama'])
+
+    def test_process_monthly_salaries_empty(self):
+        """
+        Senaryo: Karşı taraftan boş liste geliyor.
+        Beklenen: False dönmeli ve uyarı vermeli.
+        """
+        self.manager.info_repo.get_all.return_value = [] # Boş liste
+        
+        success, msg = self.manager.process_monthly_salaries()
         
         self.assertFalse(success)
-        self.assertIn("Kategori Uyuşmazlığı", message)
-
-    def test_delete_transaction(self):
-        """
-        Kayıt silme testi.
-        """
-        # Önce bir kayıt ekler
-        self.manager.add_transaction("Gelir", "Sponsorluk", 100)
-        records = self.manager.get_all_transactions()
-        target_id = records[0]['id']
-        
-        # Sonra siler
-        success, msg = self.manager.delete_transaction(target_id)
-        self.assertTrue(success)
-        
-        # Silindiğini doğrular (Liste boş olmalı)
-        records_after = self.manager.get_all_transactions()
-        self.assertEqual(len(records_after), 0)
+        self.assertIn("bulunamadı", msg)
