@@ -1,21 +1,13 @@
 import sys
 import os
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QMessageBox
-from PyQt5 import uic
 
-# --- 1. UBUNTU EKRAN AYARI (Hata almamak için şart) ---
+
 os.environ["QT_QPA_PLATFORM"] = "xcb"
 
-# --- 2. SENİN VERDİĞİN İMPORTLAR ---
-try:
-    from modules.information.PlayerInformationPage import PlayerInfoPage
-    from modules.finance.FinancialManagementPage import FinancialPage
-    from modules.match_point.MatchPointManagementPage import MatchPointPage
-    print("✅ Modüller başarıyla yüklendi.")
-except ImportError as e:
-    print(f"❌ İMPORT HATASI: {e}")
-    print("Lütfen dosya adlarının ve içindeki Class adlarının birebir tuttuğundan emin olun.")
-    sys.exit(1)
+
+
+    
+
 
 class AnaUygulama(QMainWindow):
     def __init__(self):
