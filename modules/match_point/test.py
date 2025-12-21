@@ -1,20 +1,15 @@
 import unittest
 from datetime import datetime
-from entities import Team, Referee, Stadium
-from services import MatchManager, MatchAnalytics
-from exceptions import SameTeamError, MissingTeamError
-
-# =============================================================================
-# UNIT TEST MODÜLÜ
+from entities import Team
+from services import MatchManager
+from exceptions import SameTeamError
+from entities import Referee
+from entities import Stadium
+from services import MatchAnalytics
+from exceptions import MissingTeamError
 # Sistemin tüm parçalarının hatasız çalıştığını doğrulayan test senaryoları.
-# =============================================================================
 
-class TestTeamEntity(unittest.TestCase):
-    """
-    Team (Takım) sınıfının testleri.
-    Puan hesaplama ve averaj mantığını kontrol eder.
-    """
-    
+class TestTeamEntity(unittest.TestCase): 
     def setUp(self):
         # Her testten önce sıfır bir takım oluşturur.
         self.team = Team(1, "Test SK", "TST", 1900, ["Siyah", "Beyaz"])
@@ -39,11 +34,8 @@ class TestTeamEntity(unittest.TestCase):
 
 
 class TestMatchManager(unittest.TestCase):
-    """
-    MatchManager (Maç Yönetimi) sınıfının testleri.
-    Maç oluşturma, hata yakalama ve listeleme testleri.
-    """
-
+    
+    #MatchManager (Maç Yönetimi) sınıfının testleri. Maç oluşturma, hata yakalama ve listeleme testleri.
     def setUp(self):
         self.manager = MatchManager()
         self.home = Team(1, "Home FC", "HOM", 2000, ["Red"])
@@ -51,7 +43,6 @@ class TestMatchManager(unittest.TestCase):
         self.stadium = Stadium(1, "Test Arena", "City", 1000)
 
     def test_create_friendly_match(self):
-        # Dostluk maçı başarıyla oluşuyor mu?
         match = self.manager.create_match("Friendly", self.home, self.away, "2025-01-01", location=self.stadium)
         self.assertIsNotNone(match)
         self.assertEqual(len(self.manager.get_all_matches()), 1)
@@ -67,30 +58,25 @@ class TestMatchManager(unittest.TestCase):
             self.manager.create_match("Friendly", None, self.away, "2025-01-01")
 
     def test_manual_score_entry(self):
-        # Manuel skor girişi çalışıyor mu?
         
-        # 1. Önce sahte bir hakem oluşturuyoruz (Çünkü Lig maçı hakemsiz OLMAZ)
         ref = Referee(99, "Test", "Hakem", "FIFA", 5)
         
-        # 2. create_match yaparken referee=ref diyerek hakemi veriyoruz
+        
         match = self.manager.create_match("League", self.home, self.away, "2025-01-01", week=1, referee=ref)
         
-        # Artık maç oluştuğu için ID'sini alabiliriz
         m_id = getattr(match, "_MatchBase__match_id")
         
-        # Manuel skoru giriyoruz
         result = self.manager.enter_manual_score(m_id, 3, 1)
-        
-        # Kontroller
+    
         self.assertTrue(result)
         self.assertEqual(match.get_score(), "3-1")
         self.assertEqual(match.get_status(), "Finished")
 
 
 class TestMatchAnalytics(unittest.TestCase):
-    """
-    İstatistik ve Analiz modülünün testleri.
-    """
+    
+   # İstatistik ve Analiz modülünün testleri.
+    
     def setUp(self):
         self.manager = MatchManager()
         self.t1 = Team(1, "A", "A", 2000, [])
@@ -100,8 +86,8 @@ class TestMatchAnalytics(unittest.TestCase):
         m2 = self.manager.create_match("Friendly", self.t2, self.t1, "2025-01-02", location=None)
         
         # services.py'ye eklediğimiz fonksiyonu kullanıyoruz
-        self.manager.play_match_manually(m1, 2, 1) # Toplam 3 gol
-        self.manager.play_match_manually(m2, 1, 1) # Toplam 2 gol
+        self.manager.play_match_manually(m1, 2, 1) 
+        self.manager.play_match_manually(m2, 1, 1) 
 
     def test_total_goals(self):
         matches = self.manager.get_all_matches()
@@ -115,23 +101,18 @@ class TestMatchAnalytics(unittest.TestCase):
 
 
 class TestIntegration(unittest.TestCase):
-    """
-    Sistemin genel akışını test eder.
-    """
+    #Sistemin genel akışını test eder.
     def test_full_flow(self):
-        # 1. Takımlar
         gs = Team(1, "Galatasaray", "GS", 1905, ["Sarı", "Kırmızı"])
         fb = Team(2, "Fenerbahçe", "FB", 1907, ["Sarı", "Lacivert"])
         
-        # 2. Maç Planlanır (Hakemli)
+    
         mgr = MatchManager()
         ref = Referee(1, "Hakem", "Bey", "FIFA", 5)
         match = mgr.create_match("League", gs, fb, "2025-05-20", week=30, referee=ref)
         
-        # 3. Manuel Oynatılır
         mgr.play_match_manually(match, 2, 1)
         
-        # 4. Puan Kontrolü
         self.assertEqual(gs.get_points(), 3)
         self.assertEqual(fb.get_points(), 0)
         self.assertEqual(gs.get_goal_difference(), 1)

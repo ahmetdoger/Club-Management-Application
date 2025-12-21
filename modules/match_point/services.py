@@ -95,18 +95,17 @@ class MatchManager:
         match.update_status("Finished")
         
         # Eğer LİG maçıysa puanları da işle (Turnuvada işleme)
-        # MatchBase içinde type 'League' olarak tutuluyor
         if getattr(match, "_MatchBase__match_type") == "League":
             match.get_home_team().update_stats(home_score, away_score)
             match.get_away_team().update_stats(away_score, home_score)
             
         print(f"✅ Manuel Giriş Başarılı: {match.get_match_info()}")
 
-    # ID ve skor ile manuel oynatma (Test dosyasının çağırdığı yer burası)
+    # ID ve skor ile manuel oynatma 
     def enter_manual_score(self, match_id, home_score, away_score):
         found_match = None
         for m in self.__matches:
-            # ID kontrolü (String çevirip karşılaştırıyoruz garanti olsun)
+            
             if str(getattr(m, "_MatchBase__match_id")) == str(match_id):
                 found_match = m
                 break
@@ -119,13 +118,9 @@ class MatchManager:
         return False
     
 
-
+      #Maçı verilen skorla oynatır ve bitirir.Lig maçıysa puan tablosunu günceller.
     def play_match_manually(self, match, home_score, away_score):
-        """
-        Maçı verilen skorla oynatır ve bitirir.
-        Lig maçıysa puan tablosunu günceller.
-        """
-        # Skoru yaz ve bitir
+        
         match.set_score(f"{home_score}-{away_score}")
         match.update_status("Finished")
         
@@ -150,7 +145,6 @@ class LeagueTable:
             key=lambda t: (t.get_points(), t.get_goal_difference()), 
             reverse=True
         )
-        # Başlıklar: O=Oynanan, G=Galibiyet, B=Beraberlik, M=Mağlubiyet, AV=Averaj, P=Puan
         print("\n" + "="*75)
         print(f"{'SIRA':<5} {'TAKIM':<20} {'O':<4} {'G':<4} {'B':<4} {'M':<4} {'AV':<5} {'PUAN':<5}")
         print("-" * 75)
@@ -171,8 +165,6 @@ class LeagueTable:
             print(f"{i:<5} {name[:19]:<20} {played:<4} {w:<4} {d:<4} {l:<4} {avg:<5} {points:<5}")
 
         print("="*75 + "\n")
-
-
 
 # YARDIMCI SERVİSLER (UTILITIES) . Sistem güvenliği, loglama ve veri doğrulama işlemlerini yapan sınıflar.
 class SystemLogger:
