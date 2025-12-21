@@ -2,11 +2,10 @@ import json
 import os
 from datetime import datetime
 
+
+ # Veri Erişim Katmanı (Data Access Layer). PDF Gereksinimleri: Kaydetme, Silme, ID ve Tarih Filtreleme.
 class MatchRepository:
-    """
-    Veri Erişim Katmanı (Data Access Layer).
-    PDF Gereksinimleri: Kaydetme, Silme, ID ve Tarih Filtreleme.
-    """
+    
     def __init__(self, data_file="matches_data.json", log_file="system_history.log"):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         self.__data_file_path = os.path.join(current_dir, data_file)
@@ -29,8 +28,7 @@ class MatchRepository:
                 f.write(f"[{timestamp}] INFO: {message}\n")
         except: pass
 
-    # --- JSON İŞLEMLERİ (KAYDETME / OKUMA) ---
-
+    # JSON İŞLEMLERİ (KAYDETME / OKUMA) 
     def save_matches_to_json(self, match_list):
         data_to_save = []
         for match in match_list:
@@ -53,15 +51,14 @@ class MatchRepository:
         except Exception as e:
             print(f"Kayıt Hatası: {e}")
             return False
-
+    #JSON dosyasındaki ham veriyi okur.
     def load_raw_data(self):
-        """JSON dosyasındaki ham veriyi okur."""
         try:
             with open(self.__data_file_path, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except: return []
 
-    # --- EKSİK OLAN VE HATAYA SEBEP OLAN FONKSİYON ---
+    # EKSİK OLAN VE HATAYA SEBEP OLAN FONKSİYON 
     def clear_database(self):
         """Veritabanını sıfırlar (Demo dosyası bunu kullanıyor)."""
         try:
@@ -71,8 +68,7 @@ class MatchRepository:
         except Exception as e:
             print(f"Sıfırlama Hatası: {e}")
 
-    # --- PDF GEREKSİNİMLERİ (FİLTRELEME) ---
-
+    #   GEREKSİNİMLERİ (FİLTRELEME) 
     def find_match_by_id(self, match_id):
         data = self.load_raw_data()
         for match in data:

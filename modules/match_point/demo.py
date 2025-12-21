@@ -1,14 +1,11 @@
-# Gerekli modülleri içe aktarıyoruz
-# (.) nokta ile aynı klasördeki dosyalardan çekiyoruz
+# Gerekli modülleri içe aktarıyoruz. 
 from entities import Team, Referee, Stadium
-from implementation import MatchManager, LeagueTable
+from services import MatchManager
+from services import LeagueTable
 from repository import MatchRepository
-
+ 
+ # Projenin ana senaryosunu çalıştıran fonksiyon. Hocanın istediği tüm özelliklerin (Maç türleri, Kayıt, Tablo) çalıştığını gösterir.
 def run_demo():
-    """
-    Projenin ana senaryosunu çalıştıran fonksiyon.
-    Hocanın istediği tüm özelliklerin (Maç türleri, Kayıt, Tablo) çalıştığını gösterir.
-    """
     print("\n" + "="*60)
     print("DEMO SENARYOSU BAŞLATILIYOR: FUTBOL YÖNETİM SİSTEMİ")
     print("="*60 + "\n")
@@ -22,18 +19,17 @@ def run_demo():
     print(">> Veritabanı temizlendi ve kullanıma hazır.\n")
 
     # 2. VARLIKLARIN OLUŞTURULMASI (Entities)
-    print("--- 1. TAKIMLAR, HAKEMLER VE STATLAR OLUŞTURULUYOR ---")
+    print("1. TAKIMLAR, HAKEMLER VE STATLAR OLUŞTURULUYOR ")
     
-    # Takımlar
+    
     t1 = Team(1, "Galatasaray", "GS", 1905, ["Sarı", "Kırmızı"])
     t2 = Team(2, "Fenerbahçe", "FB", 1907, ["Sarı", "Lacivert"])
     t3 = Team(3, "Beşiktaş", "BJK", 1903, ["Siyah", "Beyaz"])
     t4 = Team(4, "Trabzonspor", "TS", 1967, ["Bordo", "Mavi"])
     
-    # Hakem
+    
     ref1 = Referee(10,"Kerem","Aran","FIFA",3)
     
-    # Stat
     stadium = Stadium(55, "Olimpiyat Stadı", "İstanbul", 76000)
     
     print(f"✅ {t1.get_name()} ve diğer takımlar lige katıldı.")
@@ -46,7 +42,6 @@ def run_demo():
     manager.create_match("Friendly", t1, t4, "2025-08-01 19:00", location=stadium)
     
     # B) Lig Maçları (Puanlı)
-    # GS vs FB
     manager.create_match("League", t1, t2, "2025-08-10 20:00", week=1, referee=ref1)
     # BJK vs TS
     manager.create_match("League", t3, t4, "2025-08-10 20:00", week=1, referee=ref1)
@@ -60,8 +55,7 @@ def run_demo():
     print(">> Tüm maçlar sisteme planlandı (Scheduled).\n")
 
     # 4. SİMÜLASYON (Maçların Oynatılması)
-    print("--- 3. MAÇLAR OYNATILIYOR (Simülasyon) ---")
-    # Manager içindeki tüm planlı maçları oynatır
+    print("--- 3. MAÇLAR OYNATILIYOR (Simülasyon) ")
     manager.simulate_all_scheduled()
     
     # 5. RAPORLAMA VE KAYIT

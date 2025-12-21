@@ -3,14 +3,16 @@ import time
 
 # Noktasız import
 from entities import Team, Referee, Stadium
-from implementation import MatchManager, LeagueTable
+from services import MatchManager
+from services import LeagueTable
 from repository import MatchRepository
 from exceptions import SameTeamError
 from exceptions import MissingTeamError
 
 
-
+# Terminal tabanlı kullanıcı arayüzünü yöneten ana sınıf.
 class ConsoleUI:
+    # Sınıf başlatılırken manager, repo ve varsayılan verileri yükler.
     def __init__(self):
         self.manager = MatchManager()
         self.repo = MatchRepository()
@@ -19,12 +21,14 @@ class ConsoleUI:
         self.stadium = Stadium(1, "Olimpiyat", "İst", 70000)
         self.load_initial_data()
 
+    # Test amaçlı varsayılan takımları sisteme ekler.
     def load_initial_data(self):
         self.teams.append(Team(1, "Galatasaray", "GS", 1905, ["Sarı", "Kırmızı"]))
         self.teams.append(Team(2, "Fenerbahçe", "FB", 1907, ["Sarı", "Lacivert"]))
         self.teams.append(Team(3, "Beşiktaş", "BJK", 1903, ["Siyah", "Beyaz"]))
         self.teams.append(Team(4, "Trabzonspor", "TS", 1967, ["Bordo", "Mavi"]))
 
+    # Kullanıcıya işlem seçeneklerini içeren ana menüyü basar.
     def display_menu(self):
         print("\n" + "="*50)
         print(" FUTBOL YÖNETİM SİSTEMİ (FULL ÖZELLİK) ")
@@ -45,6 +49,7 @@ class ConsoleUI:
         print("0. ÇIKIŞ")
         print("="*50)
 
+    # Uygulamanın ana döngüsünü başlatır ve kullanıcı seçimlerini yönetir.
     def run(self):
         while True:
             self.display_menu()
@@ -67,8 +72,9 @@ class ConsoleUI:
                 print("Çıkış yapılıyor..."); break
             else: print("Geçersiz seçim.")
 
-    # --- UI METOTLARI ---
+    #  UI METOTLARI
 
+    # Kullanıcıdan listeden iki farklı takım seçmesini ister.
     def select_teams(self):
         print("\n--- Takım Listesi ---")
         for i, team in enumerate(self.teams):
@@ -79,19 +85,20 @@ class ConsoleUI:
             return self.teams[h], self.teams[a]
         except: return None, None
 
-    # console_app.py içindeki ilgili fonksiyonları bul ve bunlarla değiştir:
+    
 
+    # Kullanıcı arayüzü üzerinden dostluk maçı oluşturur.
     def create_friendly_ui(self):
         print("\n[YENİ DOSTLUK MAÇI]")
         try:
             home, away = self.select_teams()
-            # if home and away:  <-- ARTIK BU KONTROLE GEREK YOK, Manager hallediyor
             self.manager.create_match("Friendly", home, away, "2025-05-20", location=self.stadium)
 
         # Çoklu Hata Yakalama (Parantez içine alıyoruz)
         except (SameTeamError, MissingTeamError) as e:
             print(f"\n❌ HATA: {e}")
 
+    # Kullanıcı arayüzü üzerinden lig maçı oluşturur.
     def create_league_ui(self):
         print("\n[YENİ LİG MAÇI]")
         try:
@@ -100,6 +107,7 @@ class ConsoleUI:
         except (SameTeamError, MissingTeamError) as e:
             print(f"\n❌ HATA: {e}")
 
+    # Kullanıcı arayüzü üzerinden kupa (turnuva) maçı oluşturur.
     def create_cup_ui(self):
         print("\n[YENİ KUPA MAÇI]")
         try:
@@ -108,21 +116,25 @@ class ConsoleUI:
         except (SameTeamError, MissingTeamError) as e:
             print(f"\n❌ HATA: {e}")
     
+    # Bekleyen maçların simülasyonunu başlatır.
     def simulate_matches_ui(self):
         print("\n>>> Maçlar Oynatılıyor...")
         self.manager.simulate_all_scheduled()
 
+    # Güncel puan durumunu ekrana tablo olarak basar.
     def show_standings_ui(self):
         LeagueTable.print_table(self.teams)
 
+    # Mevcut maç verilerini JSON dosyasına kaydeder.
     def save_data_ui(self):
         matches = self.manager.get_all_matches()
         if self.repo.save_matches_to_json(matches):
             print("✅ KAYIT BAŞARILI (JSON güncellendi)")
         else: print("❌ Hata oluştu.")
 
-    # --- YENİ FİLTRELEME UI FONKSİYONLARI ---
+    # YENİ FİLTRELEME UI FONKSİYONLARI 
 
+    # Takım ismine göre o takımın maç geçmişini filtreler.
     def filter_by_team_ui(self):
         name = input("Aranacak Takım Adı (örn: Galatasaray): ")
         matches = self.manager.get_matches_of_team(name)
@@ -131,6 +143,7 @@ class ConsoleUI:
             print(m.get_match_info())
         input("Devam etmek için Enter...")
 
+    # Maç ID'sine göre veritabanında arama yapar.
     def search_by_id_ui(self):
         print("Not: ID'leri görmek için önce verileri kaydedip JSON dosyasına bakabilirsin.")
         mid = input("Aranacak Maç ID: ")
@@ -141,6 +154,7 @@ class ConsoleUI:
             print("❌ Maç bulunamadı (Önce '6' ile kaydettiğinden emin ol).")
         input("Devam...")
 
+    # Kullanıcının girdiği tarihe göre maçları filtreler.
     def filter_by_date_ui(self):
         date = input("Tarih girin (YYYY-MM-DD): ") # Örn: 2025-05-20
         results = self.repo.filter_matches_by_date(date)
@@ -150,6 +164,7 @@ class ConsoleUI:
         if not results: print("Kayıt bulunamadı.")
         input("Devam...")
 
+    # Maç türüne (Lig, Dostluk vb.) göre filtreleme yapar.
     def filter_by_type_ui(self):
         mtype = input("Maç Tipi (League / Friendly / Tournament): ")
         results = self.repo.filter_matches_by_type(mtype)

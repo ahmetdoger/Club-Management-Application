@@ -1,18 +1,7 @@
-"""
-entities.py
 
-Bu modül, Maç ve Turnuva Yönetim Sistemi için gerekli olan
-temel varlık sınıflarını (Entities) içerir.
-Veri bütünlüğünü sağlamak adına tüm özellikler kapsüllenmiştir (Encapsulation).
-"""
-
-
-# 1. Stadium Class (Stadyum Varlığı)
-
+ #Bu modül, Maç ve Turnuva Yönetim Sistemi için gerekli olan temel varlık sınıflarını (Entities) içerir.1. Stadium Class (Stadyum Varlığı)
 class Stadium:
-    
-    
-    # Statik sayaç (Hocanın isteği üzerine)
+    # Statik sayaç 
     _total_stadiums = 0
 
     def __init__(self, stadium_id, name, city, capacity, surface_type="Grass"):
@@ -25,7 +14,7 @@ class Stadium:
         
         Stadium.increment_count()
 
-    # --- Static Methods ---
+    # --- Static Methods 
     @staticmethod
     def validate_capacity(cap):
         """Kapasitenin geçerli olup olmadığını kontrol eder."""
@@ -37,7 +26,7 @@ class Stadium:
     def increment_count(cls):
         cls._total_stadiums += 1
 
-    # --- Getter & Setter Methods ---
+    # Getter & Setter Methods 
 
     def get_stadium_id(self):
         return self.__stadium_id
@@ -89,9 +78,9 @@ class Stadium:
 # 2. Referee Class (Hakem Varlığı)
 
 class Referee:
-    """
-    Maçı yönetecek hakem bilgilerini tutar.
-    """
+    
+    # yönetecek hakem bilgilerini tutar.
+    
     def __init__(self, referee_id, first_name, last_name, license_level, experience_year):
         self.__referee_id = referee_id
         self.__first_name = first_name
@@ -100,7 +89,7 @@ class Referee:
         self.__experience_year = experience_year
         self.__matches_officiated = 0 # Yönettiği maç sayısı
 
-    # --- Getter & Setter Methods ---
+    # --- Getter & Setter Methods 
 
     def get_referee_id(self):
         return self.__referee_id
@@ -136,12 +125,9 @@ class Referee:
 
 
 # 3. Team Class (Takım Varlığı)
-
 class Team:
-    """
-    Lig veya turnuvada yer alan takımı temsil eder.
-    Maçlarda 'home' ve 'away' parametresi olarak bu sınıf kullanılır.
-    """
+
+    #Lig veya turnuvada yer alan takımı temsil eder.  Maçlarda 'home' ve 'away' parametresi olarak bu sınıf kullanılır.
     def __init__(self, team_id, name, short_code, founding_year, colors):
         self.__team_id = team_id
         self.__name = name
@@ -159,7 +145,6 @@ class Team:
         self.__points = 0
 
     # --- İstatistik Metotları ---
-
     def update_stats(self, goals_for, goals_against):
         """Maç sonucuna göre istatistikleri günceller."""
         self.__played += 1
@@ -181,7 +166,6 @@ class Team:
         return self.__goals_scored - self.__goals_conceded
 
     # --- Getter & Setter Methods ---
-
     def get_team_id(self):
         return self.__team_id
 

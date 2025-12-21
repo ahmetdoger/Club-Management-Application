@@ -14,10 +14,8 @@ class MatchBase(ABC):
         self.__match_type = match_type
         self.__date_time = date_time
         
-
         self.__status = "Scheduled"
         
-        # Score varsayilan olarak '0-0' veya baslar
         self.__score = "0-0"
 
         # Her nesne olusturuldugunda sinif sayacini artir
@@ -26,22 +24,18 @@ class MatchBase(ABC):
     # Abstract Methods (Soyut Metotlar) 
     @abstractmethod
     def simulate_match(self):
-        
          pass
     
     @abstractmethod
     def update_status(self, new_status):
-    
         pass
-
+    #Mac ile ilgili ozet bilgileri dondurur. Polimorfizm ornegi olarak her alt sinif farkli formatta donebilir.
     @abstractmethod
-     #Mac ile ilgili ozet bilgileri dondurur. Polimorfizm ornegi olarak her alt sinif farkli formatta donebilir.
+
     def get_match_info(self):
-        
         pass
     
     # Encapsulation: Getter & Setter Methods . Private degiskenlere erisim sadece metotlarla yapilmalidir.
-
     def get_match_id(self):
         return self.__match_id
 
@@ -76,8 +70,9 @@ class MatchBase(ABC):
         return self.__status
 
     # Status guncellemesi icin ozel setter, abstract metot uzerinden de cagrilabilir
+    
+     # Bu metot sinif ici (protected) kullanim icindir
     def _set_status_internal(self, status):
-        # Bu metot sinif ici (protected) kullanim icindir
         self.__status = status
 
     def get_score(self):
@@ -86,18 +81,15 @@ class MatchBase(ABC):
     def set_score(self, score):
         self.__score = score
 
-
-
     # Class & Static Methods
-
     @classmethod
     def increase_object_count(cls):
         cls._total_match_objects += 1
-
+   
+   # Class & Static Methods
     @classmethod
     def get_total_objects(cls):
         return cls._total_match_objects
-
 
      #[Static Method] Ev sahibi ve deplasman takiminin ayni olup olmadigini kontrol eder.Data validasyonu icin kullanilir.
     @staticmethod
@@ -107,7 +99,6 @@ class MatchBase(ABC):
             print("Hata: Bir takim kendi kendine mac yapamaz!")
             return False
         return True
-
 
    # [Static Method] Tarih nesnesini okunabilir string formatina cevirir.
     @staticmethod
