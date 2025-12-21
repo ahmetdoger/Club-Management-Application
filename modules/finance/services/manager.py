@@ -6,7 +6,7 @@ from ..data import (
 )
 from ..exceptions.errors import FinanceError
 
-# UI ve veri katmanı arasındaki iletişimi yöneten servis sınıfı
+# Kullanıcı ile backend arasındaki finansal işlemleri yöneten servis sınıfı
 class FinanceManager:
     # Gerekli bileşenleri başlatır
     def __init__(self):
@@ -105,8 +105,6 @@ class FinanceManager:
             return self.repo.load_all()
         except FinanceError:
             return []
-
-    # --- RAPORLAMA VE ANALİZ FONKSİYONLARI ---
 
     # Genel finansal özeti hesaplar
     def get_financial_summary(self):
