@@ -1,100 +1,102 @@
 import os
 import sys
-
-
-sys.path.append(os.getcwd())
-
 from modules.information.implementations import ProfessionalAthlete, AmateurAthlete, YouthAthlete
-from modules.information.repository import AthleteRepository
 from modules.information.services import AthleteService
+from modules.information.errors import ClubManagerError
+# Demo sonucu oluşan json dosyasının information klasöre kaydedilmesini sağlar
+script_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_dir)
+project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
+sys.path.append(project_root)
 
+# Sistemin özelliklerini sergileyen demo senaryosunu çalıştırır
 def run_demo_scenario():
     print("================================================================")
-    print("      PLAYER INFORMATION MODULE - SCENARIO DEMO")
+    print("      SPOR KULÜBÜ YÖNETİM SİSTEMİ - DEMO SENARYOSU")
     print("================================================================\n")
+    print("[1] SİSTEM KURULUMU VE CLASS METHOD KULLANIMI")
+    service = AthleteService.start_season_mode(2025)
+    print(f"   -> Sistem 2025 sezonu için hazırlandı.\n")
+    print("[2] SPORCU NESNELERİNİN OLUŞTURULMASI (SUBCLASSES)")
 
-   
-    print("[1] SYSTEM SETUP")
-    demo_db = "demo_scenario.json"
-    if os.path.exists(demo_db): os.remove(demo_db) 
-    
-    repo = AthleteRepository(demo_db)
-    service = AthleteService(repo)
-    print(f"   -> Repository connected to {demo_db}")
-    print(f"   -> Service initialized.\n")
-
-    
-    print("[2] CREATING ATHLETE INSTANCES (SUBCLASSES)")
-    
-    
+    # Profesyonel Sporcu (Maaşlı)
     pro_athlete = ProfessionalAthlete(
-        athlete_id=101, name="Cristiano", surname="Ronaldo", age=38, gender="Male",
-        height=187, weight=83, sport_branch="Football", status="Active",
-        strong_side="Right", salary=200000000.0, contract_end_date="2025-06-30"
+        athlete_id=101, name="Mauro", surname="Icardi", age=31, gender="Male",
+        height=181, weight=75, sport_branch="Football", status="Active",
+        strong_side="Right", salary=10000000.0, contract_end_date="2026-06-30"
     )
-    print(f"   -> Professional Created: {pro_athlete.name} (Salary based)")
+    print(f"   -> Profesyonel Eklendi: {pro_athlete.name} (Maaşlı)")
 
-    
+    # Amatör Sporcu (Lisanslı)
     amateur_athlete = AmateurAthlete(
-        athlete_id=102, name="Local", surname="Hero", age=22, gender="Male",
-        height=175, weight=70, sport_branch="Tennis", status="Active",
-        strong_side="Right", licence_number="TENNIS-TR-001"
+        athlete_id=102, name="Filenin", surname="Sultanı", age=24, gender="Female",
+        height=190, weight=70, sport_branch="Volleyball", status="Active",
+        strong_side="Right", licence_number="VOL-TR-001"
     )
-    print(f"   -> Amateur Created: {amateur_athlete.name} (No Salary)")
+    print(f"   -> Amatör Eklendi: {amateur_athlete.name} (Sadece Lisans Bedeli)")
 
-    
+    # Altyapı Sporcusu (Burslu)
     youth_athlete = YouthAthlete(
-        athlete_id=103, name="Future", surname="Star", age=14, gender="Female",
-        height=165, weight=55, sport_branch="Volleyball", status="Active",
-        strong_side="Left", guardian_name="Mother Star", scholarship_amount=5000.0
+        athlete_id=103, name="Geleceğin", surname="Yıldızı", age=14, gender="Male",
+        height=175, weight=60, sport_branch="Basketball", status="Active",
+        strong_side="Left", guardian_name="Veli Bey", scholarship_amount=7500.0
     )
-    print(f"   -> Youth Created: {youth_athlete.name} (Scholarship based)\n")
+    print(f"   -> Altyapı Eklendi: {youth_athlete.name} (Burslu)\n")
 
  
-    print("[3] POLYMORPHISM IN ACTION")
-    print("   (Iterating through a single list, calling same methods, getting different behaviors)")
-    print("-" * 70)
-    print(f"   {'NAME':<20} | {'ROLE':<20} | {'CALCULATED COST'}")
-    print("-" * 70)
+    print("[3] POLİMORFİZM ÖRNEĞİ (ÇOK BİÇİMLİLİK)")
+    print("   (Aynı listedeki farklı türden nesnelerin 'calculate_salary' metoduna farklı tepki vermesi)")
+    print("-" * 75)
+    print(f"   {'İSİM':<20} | {'STATÜ':<20} | {'MALİYET HESABI'}")
+    print("-" * 75)
 
-    
-    roster_list = [pro_athlete, amateur_athlete, youth_athlete]
+    roster = [pro_athlete, amateur_athlete, youth_athlete]
 
-    for athlete in roster_list:
-     
+    for athlete in roster:
+        # Polimorfizm burada gerçekleşiyor 
         cost = athlete.calculate_salary()
-        role = type(athlete).__name__ 
+        role = type(athlete).__name__
         
         print(f"   {athlete.name:<20} | {role:<20} | {cost:,.2f} TL")
-        
+        print(f"      -> Detay: {athlete.branch_strong_side()}")
+    print("-" * 75 + "\n")
+    print("[4] VERİTABANI İŞLEMLERİ VE HATA YÖNETİMİ")
+    
+    try:
        
-        print(f"      -> Detail: {athlete.branch_strong_side()}")
-    print("-" * 70 + "\n")
+        service.repository.add(pro_athlete)
+        service.repository.add(amateur_athlete)
+        service.repository.add(youth_athlete)
+        print(f"   -> Sporcular başarıyla veritabanına kaydedildi.")
+        
+        
+        print("   -> TEST: Aynı ID (101) ile tekrar ekleme deneniyor...")
+        service.repository.add(pro_athlete) 
+        
+    except ClubManagerError as e:
+    
+        print(f"   [HATA YAKALANDI] {e.message}")
+        print(f"   -> Hata Kodu: {e.error_code} (Sistem çalışmaya devam ediyor.)")
 
+    print("\n[5] İŞ MANTIĞI VE KURAL İHLALİ TESTİ")
+    print(f"   -> {pro_athlete.name} başlangıç durumu: {pro_athlete.status}")
     
-    print("[4] SAVING TO DATABASE via SERVICE")
-    
-    service.repository.add(pro_athlete)
-    service.repository.add(amateur_athlete)
-    service.repository.add(youth_athlete)
-    
-    saved_count = len(service.repository.get_all())
-    print(f"   -> {saved_count} athletes successfully saved to JSON.\n")
-
-    
-    print("[5] BUSINESS LOGIC: STATUS UPDATE")
-    print(f"   -> Current Status of {pro_athlete.name}: {pro_athlete.status}")
-    
-    service.update_athlete_status(101, "Injured")
-    updated_pro = service.repository.get_by_id(101)
-    
-    print(f"   -> New Status: {updated_pro['status']}")
-    print("   -> Status update logic verified.\n")
-
-    print("================================================================")
-    print("      DEMO COMPLETED SUCCESSFULLY")
-    print("================================================================")
-
    
+    service.update_athlete_status(101, "Suspended")
+    print(f"   -> Durum güncellendi: Active -> Suspended")
+    
+    
+    print("   -> TEST: Cezalı oyuncu 'Sakat' (Injured) statüsüne alınmaya çalışılıyor...")
+    
+    try:
+        service.update_athlete_status(101, "Injured")
+    except ClubManagerError as e:
+        print(f"   [HATA YAKALANDI] {e.message}")
+        print(f"   -> İş kuralı başarıyla korundu.")
+    
+    print("\n================================================================")
+    print("      DEMO BAŞARIYLA TAMAMLANDI")
+    print("================================================================")
+    
 if __name__ == "__main__":
     run_demo_scenario()

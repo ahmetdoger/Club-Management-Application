@@ -3,14 +3,29 @@ from typing import List, Optional
 from .repository import AthleteRepository
 from .implementations import ProfessionalAthlete, AmateurAthlete, YouthAthlete
 
+from .errors import (
+    raise_invalid_age_error,
+    raise_missing_field_error,
+    raise_status_error
+)
+
+# Veri yönetimini koordine eder
 class AthleteService:
     def __init__(self, repository: AthleteRepository):
-        self.repository = repository
+        self.__repository = repository
 
+    # Bağlı repository nesnesini döndürür
+    @property
+    def repository(self):
+        return self.__repository
+    
+    # Yeni sporcu kaydeder
     def register_athlete(self, name: str, surname: str, age: int, gender: str, height: int, weight: int, branch: str, category: str, strong_side: str, **kwargs):
+
+        if not name or not surname:
+            raise_missing_field_error("İsim veya Soyisim")
         if not self.validate_athlete_age(age):
-            raise ValueError(f"Hata: {age} yaşı kayıt için uygun değil (5-100 arası).")
-        
+            raise_invalid_age_error(age)
         if height < 100 or height > 250:
             print(f"Uyarı: Girilen boy ({height} cm) olağandışı.")
         
@@ -34,47 +49,47 @@ class AthleteService:
         else:
             raise ValueError(f"Geçersiz Kategori: {category}")
 
-        self.repository.add(new_athlete)
+        self.__repository.add(new_athlete)
         return f"{name} {surname} ({category}) sisteme eklendi."
-
+    
+    # Kurallara göre sporcu statüsünü günceller
     def update_athlete_status(self, athlete_id: int, new_status: str):
-        athlete = self.repository.get_by_id(athlete_id)
+        athlete = self.__repository.get_by_id(athlete_id)
         if not athlete:
             return False
-        if athlete.get('status') == "Suspended" and new_status == "Injured":
-            print("İş Kuralı İhlali.")
-            return False
+        current_status = athlete.get('status')
+        if current_status == "Suspended" and new_status == "Injured":
+            raise_status_error(current_status, new_status)
         try:
-            self.repository.update(athlete_id, {"status": new_status})
+            self.__repository.update(athlete_id, {"status": new_status})
             return True
         except ValueError:
             return False
-
+    
+    # Branşa göre sporcuları listeler
     def list_athletes_by_branch(self, branch: str):
-        return self.repository.get_by_branch(branch)
-
+        return self.__repository.get_by_branch(branch)
+    
+    # İsim veya ID ile sporcu arar
     def search_athlete(self, keyword):
-        all_athletes = self.repository.get_all()
+        all_athletes = self.__repository.get_all()
         results = []
         for athlete in all_athletes:
-            # Hem ID, hem İsim, hem de Soyisim verilerini alıyoruz
             a_id = str(athlete.get('athlete_id', ''))
             a_name = athlete.get('name', '').lower()
-            a_surname = athlete.get('surname', '').lower() # [EKLENDİ] Soyadını da al
-            
+            a_surname = athlete.get('surname', '').lower() 
             search_key = str(keyword).lower()
 
-            # ID eşleşmesi
             if str(keyword).isdigit() and a_id == str(keyword):
                 results.append(athlete)
-            # İsim VEYA Soyisim içinde geçiyor mu? [GÜNCELLENDİ]
             elif search_key in a_name or search_key in a_surname:
                 results.append(athlete)
                 
         return results
-
+   
+    # Çoklu kriterlere göre filtreleme yapar
     def filter_athletes_by_criteria(self, min_age=0, status=None, gender=None):
-        all_athletes = self.repository.get_all()
+        all_athletes = self.__repository.get_all()
         filtered = []
         for a in all_athletes:
             if a.get('age', 0) < min_age: continue
@@ -82,7 +97,16 @@ class AthleteService:
             if gender and a.get('gender', '').lower() != gender.lower(): continue
             filtered.append(a)
         return filtered
-
+    
+    # Yaşın geçerli aralıkta olup olmadığını doğrular
     @staticmethod
     def validate_athlete_age(age: int) -> bool:
         return 5 <= age <= 100
+    
+    # Belirli bir yıl için sezonluk servis başlatır
+    @classmethod
+    def start_season_mode(cls, year):
+        season_filename = f"athletes_{year}.json"
+        print(f"=== {year} SEZONU YÖNETİM PANELİ BAŞLATILIYOR ===")
+        season_repo = AthleteRepository(season_filename)
+        return cls(season_repo)
