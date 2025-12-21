@@ -6,15 +6,14 @@ os.environ["QT_QPA_PLATFORM"] = "xcb"
 
 # --- 2. SENİN VERDİĞİN İMPORTLAR ---
 try:
-<<<<<<< HEAD
-<<<<<<< HEAD
-    from modules.information.base import AthleteBase 
-=======
-    from modules.information.PlayerInformationPage import PlayerInfoPage
->>>>>>> 8dad336af6771626c64b411eaf15ec151b90f02f
-=======
 
->>>>>>> 7f84282ca615ac39b9218b5c241c7e75af2f836f
+    from modules.information.base import AthleteBase 
+
+    from modules.information.PlayerInformationPage import PlayerInfoPage
+
+
+
+
     from modules.finance.FinancialManagementPage import FinancialPage
     from modules.finance.ui.FinanceModule import FinancialPage
     from modules.matches.MatchPointManagementPage import MatchPointPage
