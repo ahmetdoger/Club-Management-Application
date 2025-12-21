@@ -114,6 +114,10 @@ class AmateurAthlete(AthleteBase):
         super().__init__(athlete_id, name, surname, age, gender, height, weight, sport_branch, status, strong_side)
         self.__licence_number = licence_number
     
+    @property
+    def licence_number(self):
+        return self.__licence_number
+    
     # Amatör sporcunun toplam maliyetini hesaplar
     def calculate_salary(self):
         base_licence_fee = 1000
