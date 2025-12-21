@@ -1,1 +1,26 @@
-[]
+[
+    {
+        "id": "d3fdf3b1",
+        "tarih": "21-12-2025 16:12:06",
+        "tip": "Gelir",
+        "kategori": "Sponsorluk",
+        "tutar": 31.0,
+        "aciklama": "samet"
+    },
+    {
+        "id": "c8acc065",
+        "tarih": "21-12-2025 16:17:06",
+        "tip": "Gelir",
+        "kategori": "Diğer Gelir",
+        "tutar": 4.0,
+        "aciklama": "samet"
+    },
+    {
+        "id": "cb89cae6",
+        "tarih": "21-12-2025 16:17:25",
+        "tip": "Gider",
+        "kategori": "Ekipman",
+        "tutar": 31.0,
+        "aciklama": "samet"
+    }
+]
