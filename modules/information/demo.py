@@ -73,7 +73,7 @@ def run_demo_scenario():
 
     
     print("[4] SAVING TO DATABASE via SERVICE")
-    ,
+    
     service.repository.add(pro_athlete)
     service.repository.add(amateur_athlete)
     service.repository.add(youth_athlete)

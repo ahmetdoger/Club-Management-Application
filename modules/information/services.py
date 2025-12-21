@@ -53,16 +53,24 @@ class AthleteService:
     def list_athletes_by_branch(self, branch: str):
         return self.repository.get_by_branch(branch)
 
-    def search_athlete(self, keyword: str):
+    def search_athlete(self, keyword):
         all_athletes = self.repository.get_all()
         results = []
         for athlete in all_athletes:
+            # Hem ID, hem İsim, hem de Soyisim verilerini alıyoruz
             a_id = str(athlete.get('athlete_id', ''))
             a_name = athlete.get('name', '').lower()
+            a_surname = athlete.get('surname', '').lower() # [EKLENDİ] Soyadını da al
+            
+            search_key = str(keyword).lower()
+
+            # ID eşleşmesi
             if str(keyword).isdigit() and a_id == str(keyword):
                 results.append(athlete)
-            elif str(keyword).lower() in a_name:
+            # İsim VEYA Soyisim içinde geçiyor mu? [GÜNCELLENDİ]
+            elif search_key in a_name or search_key in a_surname:
                 results.append(athlete)
+                
         return results
 
     def filter_athletes_by_criteria(self, min_age=0, status=None, gender=None):

@@ -32,7 +32,7 @@ class TestAthleteSystem(unittest.TestCase):
             os.remove(self.test_db_name)
 
   
-    def test_create_professional_icardi(self):
+    def test_01_create_professional_icardi(self):
         print("\n[TEST 1] Creating Professional Profile (Icardi)...")
         
         # Sporcuyu oluşturuyoruz
@@ -70,7 +70,7 @@ class TestAthleteSystem(unittest.TestCase):
         print("   -> Icardi test passed.")
 
    
-    def test_create_amateur_eda(self):
+    def test_02_create_amateur_eda(self):
         print("\n[TEST 2] Creating Amateur Profile (Eda Erdem)...")
         
        
@@ -105,7 +105,7 @@ class TestAthleteSystem(unittest.TestCase):
         print("   -> Eda Erdem test passed.")
 
 
-    def test_create_youth_scholarship(self):
+    def test_03_create_youth_scholarship(self):
         print("\n[TEST 3] Youth Scholarship Exam Test...")
         
         # Öğrenci bilgileri
@@ -135,10 +135,10 @@ class TestAthleteSystem(unittest.TestCase):
         print("   -> Youth scholarship test passed.")
 
   
-    def test_service_register_and_search(self):
+    def test_04_service_register_and_search(self):
         print("\n[TEST 4] Service Registration & Search Scenario...")
         
-        
+        # 1. Adım: Yeni bir sporcu kaydedelim
         result_message = self.service.register_athlete(
             name="Fernando",
             surname="Muslera",
@@ -152,22 +152,21 @@ class TestAthleteSystem(unittest.TestCase):
             salary=5000000.0
         )
         
-       
-        self.assertIn("başarıyla", result_message)
+        
+        self.assertIn("sisteme eklendi", result_message)
         
         
         search_results = self.service.search_athlete("Muslera")
         
-        
+       
         self.assertEqual(len(search_results), 1)
         
        
         found_athlete = search_results[0]
         self.assertEqual(found_athlete['surname'], "Muslera")
         print("   -> Service register/search test passed.")
-
    
-    def test_update_and_delete(self):
+    def test_05_update_and_delete(self):
         print("\n[TEST 5] CRUD (Update & Delete) Scenario...")
         
        
