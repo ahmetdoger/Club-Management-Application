@@ -3,7 +3,6 @@ import os
 from typing import List, Optional
 from .base import AthleteBase
 
-
 class AthleteRepository:
     
     def __init__(self, filename="athletes.json"):

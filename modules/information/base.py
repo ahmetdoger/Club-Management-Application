@@ -73,7 +73,6 @@ class AthleteBase(ABC):
     @status.setter
     def status(self,new_status):
         current_status = ["Active","Injured","Suspended","Retired","TransferListed","Excluded"]
-
         if new_status in current_status:
             self.__status = new_status
         else:
@@ -107,7 +106,6 @@ class AthleteBase(ABC):
     #  Rastgele özelliklere sahip bir sporcu nesnesi oluşturur
     @classmethod
     def create_random(cls):
-        
         names = ["Ali", "Ayşe", "Mehmet", "Elif", "Can", "Zeynep"]
         surnames = ["Yılmaz", "Kaya", "Demir", "Çelik", "Şahin", "Öztürk"]
         branches = ["Football", "Basketball", "Volleyball",]

@@ -57,17 +57,17 @@ class AthleteService:
         all_athletes = self.repository.get_all()
         results = []
         for athlete in all_athletes:
-            # Hem ID, hem İsim, hem de Soyisim verilerini alıyoruz
+            
             a_id = str(athlete.get('athlete_id', ''))
             a_name = athlete.get('name', '').lower()
-            a_surname = athlete.get('surname', '').lower() # [EKLENDİ] Soyadını da al
+            a_surname = athlete.get('surname', '').lower() 
             
             search_key = str(keyword).lower()
 
-            # ID eşleşmesi
+            
             if str(keyword).isdigit() and a_id == str(keyword):
                 results.append(athlete)
-            # İsim VEYA Soyisim içinde geçiyor mu? [GÜNCELLENDİ]
+            
             elif search_key in a_name or search_key in a_surname:
                 results.append(athlete)
                 

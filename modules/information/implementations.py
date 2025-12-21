@@ -8,7 +8,8 @@ class ProfessionalAthlete(AthleteBase):
     def __init__(self, athlete_id, name,surname, age,gender,height,weight,sport_branch, status,strong_side,salary,contract_end_date):
         super().__init__(athlete_id, name,surname, age,gender,height,weight,sport_branch, status,strong_side)
         self.__salary = salary
-        self.__contract_end_date = contract_end_date    
+        self.__contract_end_date = contract_end_date
+           
     
     @staticmethod
     def calculate_tax(salary):
@@ -106,8 +107,8 @@ class AmateurAthlete(AthleteBase):
     
     # Amatör sporcunun toplam maliyetini hesaplar
     def calculate_salary(self):
-        base_licence_fee = 0
-        transport_support = 0
+        base_licence_fee = 1000
+        transport_support = 100
         return base_licence_fee + transport_support
 
     # Branşa göre güçlü tarafı yorumlar
@@ -234,7 +235,7 @@ class YouthAthlete(AthleteBase):
             print(f"Kayıt Başarısız: {name} (Yaş: {age}) altyapı yaş sınırını aşıyor.")
             return None
 
-        scholarship = 0
+        scholarship = 500
         base_fee = 10000 
         
         if exam_score >= 90:
