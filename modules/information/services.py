@@ -86,3 +86,18 @@ class AthleteService:
     @staticmethod
     def validate_athlete_age(age: int) -> bool:
         return 5 <= age <= 100
+    
+    @classmethod
+    def start_season_mode(cls, year):
+    
+        
+        season_filename = f"athletes_{year}.json"
+        
+        print(f"=== {year} SEZONU YÖNETİM PANELİ BAŞLATILIYOR ===")
+        
+       
+        season_repo = AthleteRepository(season_filename)
+        
+       
+        return cls(season_repo)
+

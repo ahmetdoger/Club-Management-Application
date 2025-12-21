@@ -7,7 +7,7 @@ class AthleteRepository:
     
     def __init__(self, filename="athletes.json"):
         self.__filename = filename
-        self.s: List[dict] = self.load_data()
+        self.athletes: List[dict] = self.load_data()
 
     
     def load_data(self) -> List[dict]:
@@ -84,3 +84,19 @@ class AthleteRepository:
     @staticmethod
     def get_database_info():
         return "JSON tabanlı dosya sistemi kullanılıyor."
+    
+    @classmethod
+    def from_backup(cls, backup_filename="backup_athletes.json"):
+        
+        import shutil
+        original_file = "athletes.json"
+        
+        
+        if os.path.exists(original_file):
+            shutil.copy2(original_file, backup_filename)
+            print(f"Sistem GÜVENLİ MODDA başlatıldı. Yedek: {backup_filename}")
+        else:
+            print("Ana veri bulunamadı, boş bir yedek dosyası ile başlanıyor.")
+            
+        
+        return cls(filename=backup_filename)
