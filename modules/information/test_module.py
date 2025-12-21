@@ -9,6 +9,8 @@ from modules.information.base import AthleteBase
 from modules.information.implementations import ProfessionalAthlete, AmateurAthlete, YouthAthlete
 from modules.information.repository import AthleteRepository
 from modules.information.services import AthleteService
+# YENİ: Hata sınıfını import ediyoruz
+from modules.information.errors import ClubManagerError
 
 class TestAthleteSystem(unittest.TestCase):
     
@@ -16,20 +18,16 @@ class TestAthleteSystem(unittest.TestCase):
         """Her testten önce çalışır: Temiz bir ortam hazırlar."""
         self.test_db = "test_database.json"
         
-       
         if os.path.exists(self.test_db):
             os.remove(self.test_db)
             
-        
         self.repo = AthleteRepository(self.test_db)
         self.service = AthleteService(self.repo)
 
     def tearDown(self):
-        
         if os.path.exists(self.test_db):
             os.remove(self.test_db)
             
-        
         if os.path.exists("backup_test.json"):
             os.remove("backup_test.json")
         if os.path.exists("athletes_2099.json"):
@@ -97,7 +95,7 @@ class TestAthleteSystem(unittest.TestCase):
         print("   -> Başarılı (Gizli değişkene erişilemedi).")
 
     def test_06_class_methods_check(self):
-        """Yeni eklenen Class Method'ların testi (YENİ)."""
+        """Yeni eklenen Class Method'ların testi."""
         print("\n[TEST 6] Class Method ve Senaryo Testi...")
         
         season_service = AthleteService.start_season_mode(2099)
@@ -110,6 +108,23 @@ class TestAthleteSystem(unittest.TestCase):
         self.assertIsNotNone(backup_repo.get_by_id(99))
         
         print("   -> Başarılı (Sezon modu ve Yedekleme çalışıyor).")
+
+    def test_07_error_handling(self):
+        """Merkezi Hata Yönetim Sistemi Testi (YENİ)."""
+        print("\n[TEST 7] Hata Yönetimi (Error Handling)...")
+        
+        # 1. Yaş Hatası Testi
+        with self.assertRaises(ClubManagerError) as context:
+            self.service.register_athlete("Hata", "Test", 150, "M", 180, 80, "Golf", "Professional", "R")
+        self.assertEqual(context.exception.error_code, 2001) # Hata kodu kontrolü
+        
+        # 2. Mükerrer ID Testi
+        self.repo.add(ProfessionalAthlete(100, "İlk", "Kayıt", 25, "M", 180, 80, "Golf", "Active", "R", 100, "2025"))
+        with self.assertRaises(ClubManagerError) as context:
+            self.repo.add(ProfessionalAthlete(100, "Kopya", "Kayıt", 25, "M", 180, 80, "Golf", "Active", "R", 100, "2025"))
+        self.assertEqual(context.exception.error_code, 3001) # Mükerrer kayıt kodu
+
+        print("   -> Başarılı (Özel hatalar doğru fırlatılıyor).")
 
 if __name__ == "__main__":
     unittest.main()
