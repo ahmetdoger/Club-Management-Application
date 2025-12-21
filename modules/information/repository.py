@@ -2,12 +2,13 @@ import json
 import os
 from typing import List, Optional
 from .base import AthleteBase
+from .errors import raise_duplicate_error, raise_not_found_error
 
 class AthleteRepository:
     
     def __init__(self, filename="athletes.json"):
         self.__filename = filename
-        self.athletes: List[dict] = self.load_data()
+        self.__athletes: List[dict] = self.load_data()
 
     
     def load_data(self) -> List[dict]:
@@ -35,8 +36,7 @@ class AthleteRepository:
             data = athlete_entity
             
         if self.get_by_id(data.get("athlete_id")):
-            print(f"Hata: {data.get('athlete_id')} ID'li sporcu zaten var.")
-            return
+            raise_duplicate_error(data.get("athlete_id"))
         
         self.__athletes.append(data)
         self.save_data()
@@ -56,12 +56,14 @@ class AthleteRepository:
     
     def delete_by_id(self, athlete_id: int) -> bool:
         athlete = self.get_by_id(athlete_id)
-        if athlete:
-            self.__athletes.remove(athlete)
-            self.save_data()
-            print(f"Repository: {athlete_id} ID'li kayıt silindi.")
-            return True
-        return False
+        
+        if not athlete:
+            raise_not_found_error(athlete_id)
+
+        self.__athletes.remove(athlete)
+        self.save_data()
+        print(f"Repository: {athlete_id} ID'li kayıt silindi.")
+        return True
 
     
     def update(self, athlete_id: int, update_data: dict):
@@ -71,7 +73,7 @@ class AthleteRepository:
             self.save_data()
             print(f"Repository: {athlete_id} ID'li kayıt güncellendi.")
         else:
-            print("Hata: Güncellenecek kayıt bulunamadı.")
+            raise_not_found_error(athlete_id)
             
     
     def get_by_branch(self, branch: str) -> List[dict]:

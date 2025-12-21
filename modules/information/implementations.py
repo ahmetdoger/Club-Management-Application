@@ -1,15 +1,21 @@
 from .base import AthleteBase
-from datetime import datetime 
 import random
+import datetime
+from .errors import (
+    raise_retirement_error, 
+    raise_performance_error, 
+    raise_clearance_error, 
+    raise_penalty_error
+)
 
 # Profesyonel sporcu özelliklerini ve kurallarını barındıran sınıf
 class ProfessionalAthlete(AthleteBase):
     # Profesyonel sporcu nesnesini başlatır
-    def __init__(self, athlete_id, name,surname, age,gender,height,weight,sport_branch, status,strong_side,salary,contract_end_date):
-        super().__init__(athlete_id, name,surname, age,gender,height,weight,sport_branch, status,strong_side)
+    def __init__(self, athlete_id, name, surname, age, gender, height, weight, sport_branch, status, strong_side, salary, contract_end_date):
+        super().__init__(athlete_id, name, surname, age, gender, height, weight, sport_branch, status, strong_side)
         self.__salary = salary
         self.__contract_end_date = contract_end_date
-           
+            
     
     @staticmethod
     def calculate_tax(salary):
@@ -32,6 +38,7 @@ class ProfessionalAthlete(AthleteBase):
             return f"Shooting Hand: {side}"
         else:
             return f"Dominant Side: {side}"
+            
     # Nesneyi sözlük formatına çevirir
     def to_dict(self):
         data = super().to_dict()
@@ -41,10 +48,11 @@ class ProfessionalAthlete(AthleteBase):
             "total_cost": self.calculate_salary()
         })
         return data    
+        
     # Profesyonel sporcunun net maaşını döndürür       
     @property
     def salary(self):
-     return self.__salary
+        return self.__salary
 
     # Maaş miktarına göre vergi oranını hesaplar
     @classmethod
@@ -67,14 +75,14 @@ class ProfessionalAthlete(AthleteBase):
              raise ValueError(f"Hata: {name} için 'strong_side' verisi eksik!")
         strong_side = current_athlete_data["strong_side"]
           
+        # --- DEĞİŞİKLİK: Hata fonksiyonu kullanımı ---
         if age >= 38:
-            print(f"Sözleşme Yenilenmedi: {name} {surname} emeklilik yaşına geldi.")
-            return None
+            raise_retirement_error(name, age)
 
         matches_played = performance_stats.get("matches_played", 0)
+        # --- DEĞİŞİKLİK: Hata fonksiyonu kullanımı ---
         if matches_played < 20:
-            print(f"Sözleşme Yenilenmedi: {name} yeterli maç sayısına ulaşamadı.")
-            return None
+            raise_performance_error(name, matches_played)
         
         rating = performance_stats.get("rating", 0) 
         if rating >= 8.5:
@@ -102,8 +110,8 @@ class ProfessionalAthlete(AthleteBase):
 # Amatör sporcu özelliklerini ve kurallarını barındıran sınıf
 class AmateurAthlete(AthleteBase):
     # Amatör sporcu nesnesini başlatır
-    def __init__(self, athlete_id, name,surname, age,gender,height,weight,sport_branch, status,strong_side,licence_number):
-        super().__init__(athlete_id, name,surname, age,gender,height,weight,sport_branch, status,strong_side)
+    def __init__(self, athlete_id, name, surname, age, gender, height, weight, sport_branch, status, strong_side, licence_number):
+        super().__init__(athlete_id, name, surname, age, gender, height, weight, sport_branch, status, strong_side)
         self.__licence_number = licence_number
     
     # Amatör sporcunun toplam maliyetini hesaplar
@@ -141,9 +149,9 @@ class AmateurAthlete(AthleteBase):
     def transfer_from_local_club(cls, name, surname, age, gender, height, weight, branch, prev_club_doc):
         is_cleared = prev_club_doc.get("has_clearance", False)
         
+        # --- DEĞİŞİKLİK: Hata fonksiyonu kullanımı ---
         if not is_cleared:
-            print(f"Transfer Reddedildi: {name} temiz kağıdı yok.")
-            return None
+            raise_clearance_error(name)
         
         if "strong_side" not in prev_club_doc:
             raise ValueError(f"Hata: Transfer için 'strong_side' bilgisi girilmemiş!")
@@ -151,8 +159,7 @@ class AmateurAthlete(AthleteBase):
 
         penalty_points = prev_club_doc.get("penalty_points", 0)
         if penalty_points > 5:
-            print(f"Transfer Reddedildi: Disiplin cezası çok yüksek ({penalty_points}).")
-            return None
+            raise_penalty_error(penalty_points)
 
         print(f"Transfer Onaylandı: {name} {surname} amatör takıma katıldı.")
         
@@ -167,8 +174,8 @@ class AmateurAthlete(AthleteBase):
 # Altyapı sporcusu özelliklerini ve kurallarını barındıran sınıf
 class YouthAthlete(AthleteBase):
     # Altyapı sporcusu nesnesini başlatır
-    def __init__(self, athlete_id, name,surname, age,gender,height,weight, sport_branch, status,strong_side,guardian_name,scholarship_amount):
-        super().__init__(athlete_id, name,surname, age,gender,height,weight, sport_branch, status,strong_side)
+    def __init__(self, athlete_id, name, surname, age, gender, height, weight, sport_branch, status, strong_side, guardian_name, scholarship_amount):
+        super().__init__(athlete_id, name, surname, age, gender, height, weight, sport_branch, status, strong_side)
         self.__guardian_name = guardian_name
         self.__scholarship_amount = scholarship_amount
 
@@ -227,7 +234,7 @@ class YouthAthlete(AthleteBase):
         name = student_info.get("name")
         surname = student_info.get("surname", "")
         age = student_info.get("age")
-        gender =student_info.get("gender")
+        gender = student_info.get("gender")
         strong_side = student_info.get("strong_side")
         height = student_info["height"] 
         weight = student_info["weight"]
@@ -252,22 +259,17 @@ class YouthAthlete(AthleteBase):
         return cls(
             athlete_id=random.randint(500, 999),
             name=name,
-            surname = surname,
+            surname=surname,
             age=age,
-            gender = gender,
+            gender=gender,
             height=height,
             weight=weight,
             sport_branch=student_info.get("branch", "General"),
             status="Active",
-            strong_side = strong_side,
+            strong_side=strong_side,
             guardian_name=student_info.get("parent_name"),
             scholarship_amount=scholarship
         )
-    
-
-
-
-
 
 
 

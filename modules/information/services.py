@@ -3,13 +3,31 @@ from typing import List, Optional
 from .repository import AthleteRepository
 from .implementations import ProfessionalAthlete, AmateurAthlete, YouthAthlete
 
+from .errors import (
+    raise_invalid_age_error,
+    raise_missing_field_error,
+    raise_status_error
+)
+
 class AthleteService:
     def __init__(self, repository: AthleteRepository):
         self.__repository = repository
 
+   
+    @property
+    def repository(self):
+        return self.__repository
+
     def register_athlete(self, name: str, surname: str, age: int, gender: str, height: int, weight: int, branch: str, category: str, strong_side: str, **kwargs):
+        
+        if not name or not surname:
+            raise_missing_field_error("İsim veya Soyisim")
+
+        
         if not self.validate_athlete_age(age):
-            raise ValueError(f"Hata: {age} yaşı kayıt için uygun değil (5-100 arası).")
+            
+           
+            raise_invalid_age_error(age)
         
         if height < 100 or height > 250:
             print(f"Uyarı: Girilen boy ({height} cm) olağandışı.")
@@ -41,9 +59,14 @@ class AthleteService:
         athlete = self.__repository.get_by_id(athlete_id)
         if not athlete:
             return False
-        if athlete.get('status') == "Suspended" and new_status == "Injured":
-            print("İş Kuralı İhlali.")
-            return False
+            
+        current_status = athlete.get('status')
+        
+       
+        if current_status == "Suspended" and new_status == "Injured":
+            
+            raise_status_error(current_status, new_status)
+            
         try:
             self.__repository.update(athlete_id, {"status": new_status})
             return True
@@ -89,15 +112,7 @@ class AthleteService:
     
     @classmethod
     def start_season_mode(cls, year):
-    
-        
         season_filename = f"athletes_{year}.json"
-        
         print(f"=== {year} SEZONU YÖNETİM PANELİ BAŞLATILIYOR ===")
-        
-       
         season_repo = AthleteRepository(season_filename)
-        
-       
         return cls(season_repo)
-
