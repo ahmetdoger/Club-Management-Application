@@ -1,14 +1,16 @@
 import sys
 import time
-
 # Noktasız import
-from entities import Team, Referee, Stadium
+from entities import Team
+from entities import Referee
+from entities import Stadium
 from services import MatchManager
 from services import LeagueTable
 from repository import MatchRepository
 from exceptions import SameTeamError
 from exceptions import MissingTeamError
-
+from services import MatchAnalytics
+from services import SystemLogger
 
 # Terminal tabanlı kullanıcı arayüzünü yöneten ana sınıf.
 class ConsoleUI:
@@ -16,6 +18,8 @@ class ConsoleUI:
     def __init__(self):
         self.manager = MatchManager()
         self.repo = MatchRepository()
+        self.logger = SystemLogger() # Loglayıcıyı başlat
+        self.logger.log_info("Program başlatıldı.") # İlk logu at
         self.teams = [] 
         self.referee = Referee(999, "Sistem", "Hakemi", "FIFA", 10)
         self.stadium = Stadium(1, "Olimpiyat", "İst", 70000)
@@ -46,6 +50,7 @@ class ConsoleUI:
         print("8. ID'ye Göre Maç Ara (Repository)")
         print("9. Tarihe Göre Filtrele (Repository)")
         print("10. Turnuva Tipine Göre Filtrele (Repository)")
+        print("11. DETAYLI SİSTEM ANALİZİ (New)")
         print("0. ÇIKIŞ")
         print("="*50)
 
@@ -67,12 +72,11 @@ class ConsoleUI:
             elif choice == '8': self.search_by_id_ui()
             elif choice == '9': self.filter_by_date_ui()
             elif choice == '10': self.filter_by_type_ui()
-            
+            elif choice == '11': self.show_analytics_ui()
             elif choice == '0': 
                 print("Çıkış yapılıyor..."); break
             else: print("Geçersiz seçim.")
 
-    #  UI METOTLARI
 
     # Kullanıcıdan listeden iki farklı takım seçmesini ister.
     def select_teams(self):
@@ -84,8 +88,6 @@ class ConsoleUI:
             a = int(input("Deplasman No: ")) - 1
             return self.teams[h], self.teams[a]
         except: return None, None
-
-    
 
     # Kullanıcı arayüzü üzerinden dostluk maçı oluşturur.
     def create_friendly_ui(self):
@@ -158,7 +160,6 @@ class ConsoleUI:
                     print("Hata: Sayı girmedin! Otomatik oynatılıyor...")
                     match.simulate_match()
             else:
-                # --- OTOMATİK ---
                 print(">> Sistem oynatıyor...")
                 match.simulate_match()
                 time.sleep(1) # 1 saniye bekle (Heyecan olsun)
@@ -175,7 +176,6 @@ class ConsoleUI:
             print("✅ KAYIT BAŞARILI (JSON güncellendi)")
         else: print("❌ Hata oluştu.")
 
-    # YENİ FİLTRELEME UI FONKSİYONLARI 
 
     # Takım ismine göre o takımın maç geçmişini filtreler.
     def filter_by_team_ui(self):
@@ -199,7 +199,7 @@ class ConsoleUI:
 
     # Kullanıcının girdiği tarihe göre maçları filtreler.
     def filter_by_date_ui(self):
-        date = input("Tarih girin (YYYY-MM-DD): ") # Örn: 2025-05-20
+        date = input("Tarih girin (YYYY-MM-DD): ") 
         results = self.repo.filter_matches_by_date(date)
         print(f"\n--- {date} Tarihli Maçlar ---")
         for m in results:
@@ -217,6 +217,34 @@ class ConsoleUI:
         if not results: print("Kayıt bulunamadı.")
         input("Devam...")
 
+
+    #  analiz metodu services.py içindeki MatchAnalytics sınıfını kullanarak istatistik gösterir.
+    def show_analytics_ui(self):
+        print("\n📊 --- SİSTEM ANALİZ RAPORU --- 📊")
+        
+        matches = self.manager.get_all_matches()
+        
+        # 1. Toplam Gol Sayısı
+        total_goals = MatchAnalytics.calculate_total_goals(matches)
+        print(f"⚽ Ligde Atılan Toplam Gol: {total_goals}")
+        
+        # 2. En Gollü Maç
+        highest_match = MatchAnalytics.find_highest_scoring_match(matches)
+        if highest_match:
+            print(f"🔥 En Heyecanlı Maç: {highest_match.get_score()} ({highest_match.get_home_team().get_name()} vs {highest_match.get_away_team().get_name()})")
+        else:
+            print("🔥 En Heyecanlı Maç: Veri Yok")
+
+        # 3. Şampiyonluk Adaylarının Galibiyet Oranı
+        print("\n--- Galibiyet Oranları ---")
+        for team in self.teams:
+            win_rate = MatchAnalytics.calculate_win_rate(matches, team.get_name())
+            print(f"- {team.get_name()}: %{win_rate:.1f}")
+            
+        # Log kaydı atalım
+        self.logger.log_info("Kullanıcı analiz raporunu görüntüledi.")
+        input("\nDevam etmek için Enter...")
 if __name__ == "__main__":
     app = ConsoleUI()
     app.run()
+

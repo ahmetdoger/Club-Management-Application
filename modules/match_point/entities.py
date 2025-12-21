@@ -76,7 +76,6 @@ class Stadium:
 
 
 # 2. Referee Class (Hakem Varlığı)
-
 class Referee:
     
     # yönetecek hakem bilgilerini tutar.

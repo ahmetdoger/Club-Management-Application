@@ -1,4 +1,5 @@
 import random
+import os
 from exceptions import SameTeamError
 from exceptions import MissingTeamError
 
@@ -88,7 +89,37 @@ class MatchManager:
         return team_matches
 
 
+    # Verilen maç nesnesini manuel skorla oynatır.
+    def play_match_manually(self, match, home_score, away_score):
+        match.set_score(f"{home_score}-{away_score}")
+        match.update_status("Finished")
+        
+        # Eğer LİG maçıysa puanları da işle (Turnuvada işleme)
+        # MatchBase içinde type 'League' olarak tutuluyor
+        if getattr(match, "_MatchBase__match_type") == "League":
+            match.get_home_team().update_stats(home_score, away_score)
+            match.get_away_team().update_stats(away_score, home_score)
+            
+        print(f"✅ Manuel Giriş Başarılı: {match.get_match_info()}")
+
+    # ID ve skor ile manuel oynatma (Test dosyasının çağırdığı yer burası)
+    def enter_manual_score(self, match_id, home_score, away_score):
+        found_match = None
+        for m in self.__matches:
+            # ID kontrolü (String çevirip karşılaştırıyoruz garanti olsun)
+            if str(getattr(m, "_MatchBase__match_id")) == str(match_id):
+                found_match = m
+                break
+        
+        if found_match:
+            self.play_match_manually(found_match, home_score, away_score)
+            return True
+            
+        print("❌ Hata: Bu ID ile eşleşen maç bulunamadı.")
+        return False
     
+
+
     def play_match_manually(self, match, home_score, away_score):
         """
         Maçı verilen skorla oynatır ve bitirir.
@@ -99,7 +130,6 @@ class MatchManager:
         match.update_status("Finished")
         
         # Eğer LİG maçıysa puanları da işle (Turnuvada işleme)
-        # MatchBase içinde type 'League' olarak tutuluyor
         if getattr(match, "_MatchBase__match_type") == "League":
             match.get_home_team().update_stats(home_score, away_score)
             match.get_away_team().update_stats(away_score, home_score)
@@ -141,3 +171,138 @@ class LeagueTable:
             print(f"{i:<5} {name[:19]:<20} {played:<4} {w:<4} {d:<4} {l:<4} {avg:<5} {points:<5}")
 
         print("="*75 + "\n")
+
+
+
+# YARDIMCI SERVİSLER (UTILITIES) . Sistem güvenliği, loglama ve veri doğrulama işlemlerini yapan sınıflar.
+class SystemLogger:
+   # Log dosyasını bu python dosyasının olduğu yere kaydeder.
+    def __init__(self, filename="system_events.log"):
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        self.__log_file = os.path.join(base_dir, filename)
+        
+        self.__enabled = True
+
+    # Loglama sistemini aktif veya pasif hale getirir.
+    def set_enabled(self, status):
+        if isinstance(status, bool):
+            self.__enabled = status
+
+    # Bilgilendirme mesajı kaydeder (INFO).
+    def log_info(self, message):
+        if self.__enabled:
+            self.__write_to_file(f"[INFO] {message}")
+
+    # Hata mesajı kaydeder (ERROR).
+    def log_error(self, message):
+        if self.__enabled:
+            self.__write_to_file(f"[ERROR] !!! {message} !!!")
+
+    # Uyarı mesajı kaydeder (WARNING).
+    def log_warning(self, message):
+        if self.__enabled:
+            self.__write_to_file(f"[WARNING] {message}")
+
+    # Maç sonucu girişlerini özel formatta kaydeder.
+    def log_match_result(self, match_info, score):
+        self.log_info(f"Maç Sonuçlandı: {match_info} -> Skor: {score}")
+
+    # Mesajı dosyaya zaman damgasıyla birlikte yazar (Private Metot).
+    def __write_to_file(self, content):
+        try:
+            with open(self.__log_file, "a", encoding="utf-8") as f:
+                f.write(f"{content}\n")
+        except:
+        
+            pass
+
+
+# Kullanıcı girişlerini kontrol eden doğrulama sınıfı.
+class InputValidator:
+    
+    # Skor girişinin mantıklı olup olmadığını kontrol eder.
+    @staticmethod
+    def validate_score(score):
+        if isinstance(score, int) and 0 <= score <= 30:
+            return True
+        return False
+
+    # Girilen tarihin formatını basitçe kontrol eder.
+    @staticmethod
+    def validate_date_format(date_string):
+        if isinstance(date_string, str) and len(date_string) == 10:
+            if "-" in date_string:
+                return True
+        return False
+
+    # Takım seçiminde aynı takımın seçilip seçilmediğini kontrol eder.
+    @staticmethod
+    def validate_team_selection(team1, team2):
+        if team1 is None or team2 is None:
+            return False
+        if team1.get_name() == team2.get_name():
+            return False
+        return True
+
+    # Lig haftasının geçerli olup olmadığını kontrol eder.
+    @staticmethod
+    def validate_league_week(week):
+        if 1 <= week <= 38:
+            return True
+        return False
+
+
+# Maç istatistiklerini hesaplayan yardımcı analiz sınıfı.
+class MatchAnalytics:
+    
+    # Verilen maç listesindeki toplam gol sayısını hesaplar.
+    @staticmethod
+    def calculate_total_goals(match_list):
+        total = 0
+        for match in match_list:
+            if match.get_status() == "Finished":
+                parts = match.get_score().split("-")
+                total += int(parts[0]) + int(parts[1])
+        return total
+
+    # En gollü maçı bulur ve döner.
+    @staticmethod
+    def find_highest_scoring_match(match_list):
+        max_goals = -1
+        target_match = None
+        
+        for match in match_list:
+            if match.get_status() == "Finished":
+                parts = match.get_score().split("-")
+                goals = int(parts[0]) + int(parts[1])
+                if goals > max_goals:
+                    max_goals = goals
+                    target_match = match
+        return target_match
+
+    # Galibiyet yüzdesini hesaplar (Sadece bitmiş maçlar).
+    @staticmethod
+    def calculate_win_rate(match_list, team_name):
+        played = 0
+        won = 0
+        for match in match_list:
+            if match.get_status() == "Finished":
+                h = match.get_home_team().get_name()
+                a = match.get_away_team().get_name()
+                s = match.get_score().split("-")
+                h_s, a_s = int(s[0]), int(s[1])
+                
+                if team_name == h:
+                    played += 1
+                    if h_s > a_s: won += 1
+                elif team_name == a:
+                    played += 1
+                    if a_s > h_s: won += 1
+                    
+        if played == 0: return 0.0
+        return (won / played) * 100
+
+
+
+

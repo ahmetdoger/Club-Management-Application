@@ -1,5 +1,7 @@
 # Gerekli modülleri içe aktarıyoruz. 
-from entities import Team, Referee, Stadium
+from entities import Team
+from entities import Referee
+from entities import Stadium
 from services import MatchManager
 from services import LeagueTable
 from repository import MatchRepository
@@ -49,7 +51,7 @@ def run_demo():
     manager.create_match("League", t2, t3, "2025-08-17 20:00", week=2, referee=ref1)
 
     # C) Kupa Maçı (Penaltılı)
-    # Final Maçı
+    
     manager.create_match("Tournament", t1, t3, "2025-09-01 21:00", round_name="Süper Kupa Finali")
     
     print(">> Tüm maçlar sisteme planlandı (Scheduled).\n")
