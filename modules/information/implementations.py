@@ -16,16 +16,16 @@ class ProfessionalAthlete(AthleteBase):
         self.__salary = salary
         self.__contract_end_date = contract_end_date
             
-    
+    # Maaş üzerinden vergi miktarını hesaplar
     @staticmethod
     def calculate_tax(salary):
         if salary > 500000: return salary * 0.20
         return salary * 0.15
 
-    # Maaşa vergi ekleyerek toplam maliyeti hesaplar
+    # Maaşa vergi ve sigorta masrafını ekleyerek toplam maliyeti hesaplar
     def calculate_salary(self):
         tax = self.calculate_tax(self.__salary)
-        insurance_cost = 0
+        insurance_cost = 2500
         return self.__salary + tax + insurance_cost
 
     # Branşa göre güçlü tarafı yorumlar  
@@ -54,7 +54,7 @@ class ProfessionalAthlete(AthleteBase):
     def salary(self):
         return self.__salary
 
-    # Maaş miktarına göre vergi oranını hesaplar
+    # Performansa dayalı sözleşme yenileme işlemini yapar
     @classmethod
     def renew_contract(cls, current_athlete_data, performance_stats):
         name = current_athlete_data.get("name")
@@ -75,12 +75,10 @@ class ProfessionalAthlete(AthleteBase):
              raise ValueError(f"Hata: {name} için 'strong_side' verisi eksik!")
         strong_side = current_athlete_data["strong_side"]
           
-        # --- DEĞİŞİKLİK: Hata fonksiyonu kullanımı ---
         if age >= 38:
             raise_retirement_error(name, age)
 
         matches_played = performance_stats.get("matches_played", 0)
-        # --- DEĞİŞİKLİK: Hata fonksiyonu kullanımı ---
         if matches_played < 20:
             raise_performance_error(name, matches_played)
         
@@ -114,6 +112,7 @@ class AmateurAthlete(AthleteBase):
         super().__init__(athlete_id, name, surname, age, gender, height, weight, sport_branch, status, strong_side)
         self.__licence_number = licence_number
     
+    # Sporcunun lisans numarasını döndürür
     @property
     def licence_number(self):
         return self.__licence_number
@@ -148,23 +147,19 @@ class AmateurAthlete(AthleteBase):
     def check_transport_distance(distance_km):
         return distance_km > 10
     
-    # Amatör sporcuyu başka kulüpten transfer eder 
+    # Amatör transfer işlemlerini yönetir
     @classmethod
     def transfer_from_local_club(cls, name, surname, age, gender, height, weight, branch, prev_club_doc):
         is_cleared = prev_club_doc.get("has_clearance", False)
-        
-        # --- DEĞİŞİKLİK: Hata fonksiyonu kullanımı ---
         if not is_cleared:
             raise_clearance_error(name)
         
         if "strong_side" not in prev_club_doc:
             raise ValueError(f"Hata: Transfer için 'strong_side' bilgisi girilmemiş!")
         strong_side = prev_club_doc["strong_side"]
-
         penalty_points = prev_club_doc.get("penalty_points", 0)
         if penalty_points > 5:
             raise_penalty_error(penalty_points)
-
         print(f"Transfer Onaylandı: {name} {surname} amatör takıma katıldı.")
         
         return cls(
@@ -256,7 +251,6 @@ class YouthAthlete(AthleteBase):
         elif exam_score >= 75:
             scholarship = base_fee * 0.50 
             print(f"{name} %50 Burs kazandı.")
-    
         if student_info.get("has_sibling", False):
             scholarship += base_fee * 0.10
             

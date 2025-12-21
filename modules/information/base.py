@@ -52,6 +52,7 @@ class AthleteBase(ABC):
     def weight(self):
         return self.__weight 
     
+    # Sporcunun yaş bilgisini kurallar çerçevesinde günceller
     @age.setter
     def age(self, new_age):
         if not (isinstance(new_age, int) and 10 < new_age < 50):
@@ -69,6 +70,7 @@ class AthleteBase(ABC):
     def status(self):
         return self.__status
     
+    # Sporcunun statüsünü geçerli değerlerle günceller
     @status.setter
     def status(self, new_status):
         current_status = ["Active", "Injured", "Suspended", "Retired", "TransferListed", "Excluded"]
@@ -106,7 +108,7 @@ class AthleteBase(ABC):
             return 0.0
         return weight / (height ** 2)
     
-
+    # Rastgele verilerle bir sporcu örneği oluşturur
     @classmethod
     def create_random(cls):
         names = ["Ali", "Ayşe", "Mehmet", "Elif", "Can", "Zeynep"]

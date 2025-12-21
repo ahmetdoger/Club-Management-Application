@@ -9,26 +9,23 @@ from .errors import (
     raise_status_error
 )
 
+# Veri yönetimini koordine eder
 class AthleteService:
     def __init__(self, repository: AthleteRepository):
         self.__repository = repository
 
-   
+    # Bağlı repository nesnesini döndürür
     @property
     def repository(self):
         return self.__repository
-
+    
+    # Yeni sporcu kaydeder
     def register_athlete(self, name: str, surname: str, age: int, gender: str, height: int, weight: int, branch: str, category: str, strong_side: str, **kwargs):
-        
+
         if not name or not surname:
             raise_missing_field_error("İsim veya Soyisim")
-
-        
         if not self.validate_athlete_age(age):
-            
-           
             raise_invalid_age_error(age)
-        
         if height < 100 or height > 250:
             print(f"Uyarı: Girilen boy ({height} cm) olağandışı.")
         
@@ -54,48 +51,43 @@ class AthleteService:
 
         self.__repository.add(new_athlete)
         return f"{name} {surname} ({category}) sisteme eklendi."
-
+    
+    # Kurallara göre sporcu statüsünü günceller
     def update_athlete_status(self, athlete_id: int, new_status: str):
         athlete = self.__repository.get_by_id(athlete_id)
         if not athlete:
             return False
-            
         current_status = athlete.get('status')
-        
-       
         if current_status == "Suspended" and new_status == "Injured":
-            
             raise_status_error(current_status, new_status)
-            
         try:
             self.__repository.update(athlete_id, {"status": new_status})
             return True
         except ValueError:
             return False
-
+    
+    # Branşa göre sporcuları listeler
     def list_athletes_by_branch(self, branch: str):
         return self.__repository.get_by_branch(branch)
-
+    
+    # İsim veya ID ile sporcu arar
     def search_athlete(self, keyword):
         all_athletes = self.__repository.get_all()
         results = []
         for athlete in all_athletes:
-            
             a_id = str(athlete.get('athlete_id', ''))
             a_name = athlete.get('name', '').lower()
             a_surname = athlete.get('surname', '').lower() 
-            
             search_key = str(keyword).lower()
 
-            
             if str(keyword).isdigit() and a_id == str(keyword):
                 results.append(athlete)
-            
             elif search_key in a_name or search_key in a_surname:
                 results.append(athlete)
                 
         return results
-
+   
+    # Çoklu kriterlere göre filtreleme yapar
     def filter_athletes_by_criteria(self, min_age=0, status=None, gender=None):
         all_athletes = self.__repository.get_all()
         filtered = []
@@ -105,11 +97,13 @@ class AthleteService:
             if gender and a.get('gender', '').lower() != gender.lower(): continue
             filtered.append(a)
         return filtered
-
+    
+    # Yaşın geçerli aralıkta olup olmadığını doğrular
     @staticmethod
     def validate_athlete_age(age: int) -> bool:
         return 5 <= age <= 100
     
+    # Belirli bir yıl için sezonluk servis başlatır
     @classmethod
     def start_season_mode(cls, year):
         season_filename = f"athletes_{year}.json"

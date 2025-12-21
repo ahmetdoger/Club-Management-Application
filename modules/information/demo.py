@@ -1,30 +1,25 @@
 import os
 import sys
+from modules.information.implementations import ProfessionalAthlete, AmateurAthlete, YouthAthlete
+from modules.information.services import AthleteService
+from modules.information.errors import ClubManagerError
+# Demo sonucu oluşan json dosyasının information klasöre kaydedilmesini sağlar
 script_dir = os.path.dirname(os.path.abspath(__file__))
-
 os.chdir(script_dir)
 project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
 sys.path.append(project_root)
 
-from modules.information.implementations import ProfessionalAthlete, AmateurAthlete, YouthAthlete
-from modules.information.services import AthleteService
-
-from modules.information.errors import ClubManagerError
-
+# Sistemin özelliklerini sergileyen demo senaryosunu çalıştırır
 def run_demo_scenario():
     print("================================================================")
     print("      SPOR KULÜBÜ YÖNETİM SİSTEMİ - DEMO SENARYOSU")
     print("================================================================\n")
-
     print("[1] SİSTEM KURULUMU VE CLASS METHOD KULLANIMI")
-    
-
     service = AthleteService.start_season_mode(2025)
     print(f"   -> Sistem 2025 sezonu için hazırlandı.\n")
-
-    
     print("[2] SPORCU NESNELERİNİN OLUŞTURULMASI (SUBCLASSES)")
-    
+
+    # Profesyonel Sporcu (Maaşlı)
     pro_athlete = ProfessionalAthlete(
         athlete_id=101, name="Mauro", surname="Icardi", age=31, gender="Male",
         height=181, weight=75, sport_branch="Football", status="Active",
@@ -32,7 +27,7 @@ def run_demo_scenario():
     )
     print(f"   -> Profesyonel Eklendi: {pro_athlete.name} (Maaşlı)")
 
-    
+    # Amatör Sporcu (Lisanslı)
     amateur_athlete = AmateurAthlete(
         athlete_id=102, name="Filenin", surname="Sultanı", age=24, gender="Female",
         height=190, weight=70, sport_branch="Volleyball", status="Active",
@@ -40,7 +35,7 @@ def run_demo_scenario():
     )
     print(f"   -> Amatör Eklendi: {amateur_athlete.name} (Sadece Lisans Bedeli)")
 
-    
+    # Altyapı Sporcusu (Burslu)
     youth_athlete = YouthAthlete(
         athlete_id=103, name="Geleceğin", surname="Yıldızı", age=14, gender="Male",
         height=175, weight=60, sport_branch="Basketball", status="Active",
@@ -58,16 +53,13 @@ def run_demo_scenario():
     roster = [pro_athlete, amateur_athlete, youth_athlete]
 
     for athlete in roster:
-        
+        # Polimorfizm burada gerçekleşiyor 
         cost = athlete.calculate_salary()
         role = type(athlete).__name__
         
         print(f"   {athlete.name:<20} | {role:<20} | {cost:,.2f} TL")
         print(f"      -> Detay: {athlete.branch_strong_side()}")
-    
     print("-" * 75 + "\n")
-
-    
     print("[4] VERİTABANI İŞLEMLERİ VE HATA YÖNETİMİ")
     
     try:
