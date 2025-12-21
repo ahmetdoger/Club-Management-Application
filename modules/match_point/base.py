@@ -39,10 +39,8 @@ class MatchBase(ABC):
     def get_match_info(self):
         
         pass
-
-
-    # Encapsulation: Getter & Setter Methods
-    #  Private degiskenlere erisim sadece metotlarla yapilmalidir.
+    
+    # Encapsulation: Getter & Setter Methods . Private degiskenlere erisim sadece metotlarla yapilmalidir.
 
     def get_match_id(self):
         return self.__match_id

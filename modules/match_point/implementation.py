@@ -1,5 +1,7 @@
 import random
 from datetime import datetime
+from exceptions import SameTeamError
+from exceptions import MissingTeamError
 
 # Yan dosyalardaki sınıfları çağırıyoruz
 # (.) nokta kullanımı aynı klasördeki dosyalara erişim sağlar
@@ -7,8 +9,10 @@ from base import MatchBase
 from entities import Team, Stadium, Referee
 
 
+
 # 1. FriendlyMatch (Dostluk Maçı)
-# Özellik: Puan verilmez, kurallar daha esnektir.
+# Özellik: Puan verilmez, LİG TABLOSUNA ETKİ ETMEZ.
+
 class FriendlyMatch(MatchBase):
     """
     Dostluk maçlarını temsil eden sınıf.
@@ -17,32 +21,35 @@ class FriendlyMatch(MatchBase):
     def __init__(self, match_id, home_team, away_team, date_time, location):
         super().__init__(match_id, home_team, away_team, "Friendly", date_time)
         
-        # Bu sınıfa özgü özellikler (Kapsüllenmiş)
+        # Bu sınıfa özgü özellikler
         self.__location = location  # Stadium nesnesi
-        self.__charity_event = False # Yardım maçı mı?
-        self.__ticket_price = 0.0    # Bilet fiyatı
+        self.__charity_event = False 
+        self.__ticket_price = 0.0    
 
     def simulate_match(self):
         """
-        Dostluk maçı simülasyonu. (Override)
+        Dostluk maçı simülasyonu.
         Daha rastgele ve bol gollü geçer.
         """
         print(f"\n--- Hazırlık Maçı Başlıyor: {self.get_home_team().get_name()} vs {self.get_away_team().get_name()} ---")
         
+        # Bol gollü olsun
         home_score = random.randint(0, 5)
         away_score = random.randint(0, 5)
         
         self.set_score(f"{home_score}-{away_score}")
         self._set_status_internal("Finished")
         
-        # İstatistikleri güncelle (Puan verilmez)
-        self.get_home_team().update_stats(home_score, away_score)
-        self.get_away_team().update_stats(away_score, home_score)
+        # --- DÜZELTME BURASI ---
+        # Lig maçlarında puanları 'update_stats' ile işliyoruz.
+        # Dostluk maçında ise puan tablosunu BOZMASIN diye bu satırları siliyoruz/kapatıyoruz.
         
-        print(f"Maç Sonucu: {self.get_score()}")
+
+        
+        
+        print(f"Maç Sonucu: {self.get_score()} (Dostluk maçı olduğu için puana etki etmedi)")
 
     def calculate_points(self):
-        # Polimorfizm: Puan yok
         return "Dostluk maçında puan verilmez."
 
     def get_match_info(self):
@@ -52,26 +59,14 @@ class FriendlyMatch(MatchBase):
     def update_status(self, new_status):
         self._set_status_internal(new_status)
 
-    # --- Getter & Setter Metotları 
-
-    def get_ticket_price(self):
-        return self.__ticket_price
-
-    def set_ticket_price(self, price):
-        if price >= 0:
-            self.__ticket_price = price
-        else:
-            print("Hata: Bilet fiyatı negatif olamaz.")
-
-    def is_charity_event(self):
-        return self.__charity_event
-
-    def set_charity_event(self, status):
-        if isinstance(status, bool):
-            self.__charity_event = status
-
-    def get_location(self):
-        return self.__location
+    # --- Getter & Setter Metotları ---
+    def get_ticket_price(self): return self.__ticket_price
+    def set_ticket_price(self, price): 
+        if price >= 0: self.__ticket_price = price
+    def is_charity_event(self): return self.__charity_event
+    def set_charity_event(self, status): 
+        if isinstance(status, bool): self.__charity_event = status
+    def get_location(self): return self.__location
 # 2. LeagueMatch (Lig Maçı)
 # Özellik: Galibiyet 3 puan, Beraberlik 1 puan. Hakem zorunludur.
 class LeagueMatch(MatchBase):
@@ -227,9 +222,17 @@ class MatchManager:
         self.__matches = [] # Bellekteki maç listesi (Repository yerine geçici)
 
     def create_match(self, match_type, home_team, away_team, date_time, **kwargs):
-        """
-        Factory Pattern: İstenen türe göre doğru sınıfı üretir.
-        """
+       
+       # Takım nesneleri gelmediyse veya None ise bu hatayı fırlat
+        if home_team is None or away_team is None:
+            raise MissingTeamError() 
+        # ----------------------------------
+
+        # AYNI TAKIM KONTROLÜ (Zaten eklemiştik)
+        if home_team.get_name() == away_team.get_name():
+            raise SameTeamError(home_team.get_name())
+        
+    
         match_id = random.randint(10000, 99999)
         new_match = None
 
@@ -280,6 +283,20 @@ class MatchManager:
         print(f" {count} maç tamamlandı. \n")
 
 
+   # PDF Beklentisi: Takıma göre maç geçmişi listeleme.
+    def get_matches_of_team(self, team_name):
+        
+        team_matches = []
+        for match in self.__matches:
+            h_name = match.get_home_team().get_name()
+            a_name = match.get_away_team().get_name()
+            
+            # Eğer takım ev sahibi veya deplasmandaysa listeye ekle
+            if team_name.lower() in h_name.lower() or team_name.lower() in a_name.lower():
+                team_matches.append(match)
+        return team_matches
+
+
 class LeagueTable:
     """
     Puan durumu tablosunu oluşturan yardımcı servis.
@@ -287,32 +304,39 @@ class LeagueTable:
     @staticmethod
     def print_table(team_list):
         """
-        Takımları puanlarına göre sıralayıp tablo halinde basar.
-        Sıralama Kriteri: Puan (Çoktan aza) -> Averaj (Çoktan aza)
+        Takımları puanlarına göre sıralayıp PRO FORMATTA basar.
         """
-        # Python'un sort fonksiyonu ile çoklu kriterli sıralama
+        # Sıralama Kriteri: Puan (Çoktan aza) -> Averaj (Çoktan aza)
         sorted_teams = sorted(
             team_list, 
             key=lambda t: (t.get_points(), t.get_goal_difference()), 
             reverse=True
         )
 
-        print("\n" + "="*55)
-        print(f"{'SIRA':<5} {'TAKIM (KOD)':<20} {'P':<3} {'G':<3} {'B':<3} {'M':<3} {'AV':<4} {'PUAN':<5}")
-        print("="*55)
+        print("\n" + "="*75)
+        # Başlıklar: O=Oynanan, G=Galibiyet, B=Beraberlik, M=Mağlubiyet, AV=Averaj, P=Puan
+        print(f"{'SIRA':<5} {'TAKIM':<20} {'O':<4} {'G':<4} {'B':<4} {'M':<4} {'AV':<5} {'PUAN':<5}")
+        print("-" * 75)
 
         for i, team in enumerate(sorted_teams, 1):
-            stats = team.get_stats_string() # Entities içindeki formatlı string
-            # Örnek stats çıktısı: "GS    | P: 5 W: 3 D: 1 L: 1 | Pts: 10"
-            # Burada daha temiz bir format için elle yazdırabiliriz:
-            print(f"{i:<5} {team.get_name()[:15]:<20} {team.get_points():<5}") 
-            # Not: Detaylı tabloyu entities içindeki verilere göre burada güzelleştirebilirsin.
-            # Şimdilik basit basıyoruz.
-            print(f"      └── {stats}")
+            # --- DÜZELTME BURADA YAPILDI ---
+            # Python'ın 'getattr' fonksiyonunu kullanıyoruz. 
+            # Bu sayede değişken ismi yanlış olsa bile program çökmez, 0 yazar.
+            # Senin entities.py yapına göre: __won, __drawn, __lost olma ihtimali yüksek.
+            
+            w = getattr(team, "_Team__won", getattr(team, "_Team__wins", 0))
+            d = getattr(team, "_Team__drawn", getattr(team, "_Team__draws", 0))
+            l = getattr(team, "_Team__lost", getattr(team, "_Team__losses", 0))
+            
+            played = w + d + l
+            avg = team.get_goal_difference()
+            points = team.get_points()
+            name = team.get_name()
 
-        print("="*55 + "\n")
+            # Tek satırda, hizalı ve temiz çıktı
+            print(f"{i:<5} {name[:19]:<20} {played:<4} {w:<4} {d:<4} {l:<4} {avg:<5} {points:<5}")
 
-
+        print("="*75 + "\n")
 
 
 
