@@ -5,7 +5,7 @@ from .implementations import ProfessionalAthlete, AmateurAthlete, YouthAthlete
 
 class AthleteService:
     def __init__(self, repository: AthleteRepository):
-        self.repository = repository
+        self.__repository = repository
 
     def register_athlete(self, name: str, surname: str, age: int, gender: str, height: int, weight: int, branch: str, category: str, strong_side: str, **kwargs):
         if not self.validate_athlete_age(age):
@@ -34,27 +34,27 @@ class AthleteService:
         else:
             raise ValueError(f"Geçersiz Kategori: {category}")
 
-        self.repository.add(new_athlete)
+        self.__repository.add(new_athlete)
         return f"{name} {surname} ({category}) sisteme eklendi."
 
     def update_athlete_status(self, athlete_id: int, new_status: str):
-        athlete = self.repository.get_by_id(athlete_id)
+        athlete = self.__repository.get_by_id(athlete_id)
         if not athlete:
             return False
         if athlete.get('status') == "Suspended" and new_status == "Injured":
             print("İş Kuralı İhlali.")
             return False
         try:
-            self.repository.update(athlete_id, {"status": new_status})
+            self.__repository.update(athlete_id, {"status": new_status})
             return True
         except ValueError:
             return False
 
     def list_athletes_by_branch(self, branch: str):
-        return self.repository.get_by_branch(branch)
+        return self.__repository.get_by_branch(branch)
 
     def search_athlete(self, keyword):
-        all_athletes = self.repository.get_all()
+        all_athletes = self.__repository.get_all()
         results = []
         for athlete in all_athletes:
             
@@ -74,7 +74,7 @@ class AthleteService:
         return results
 
     def filter_athletes_by_criteria(self, min_age=0, status=None, gender=None):
-        all_athletes = self.repository.get_all()
+        all_athletes = self.__repository.get_all()
         filtered = []
         for a in all_athletes:
             if a.get('age', 0) < min_age: continue

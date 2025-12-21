@@ -47,6 +47,7 @@ class ProfessionalAthlete(AthleteBase):
      return self.__salary
 
     # Maaş miktarına göre vergi oranını hesaplar
+    @classmethod
     def renew_contract(cls, current_athlete_data, performance_stats):
         name = current_athlete_data.get("name")
         surname = current_athlete_data.get("surname", "")

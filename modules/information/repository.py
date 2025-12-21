@@ -6,15 +6,15 @@ from .base import AthleteBase
 class AthleteRepository:
     
     def __init__(self, filename="athletes.json"):
-        self.filename = filename
-        self.athletes: List[dict] = self.load_data()
+        self.__filename = filename
+        self.s: List[dict] = self.load_data()
 
     
     def load_data(self) -> List[dict]:
-        if not os.path.exists(self.filename):
+        if not os.path.exists(self.__filename):
             return []
         try:
-            with open(self.filename, 'r', encoding='utf-8') as file:
+            with open(self.__filename, 'r', encoding='utf-8') as file:
                 return json.load(file)
         except (json.JSONDecodeError, IOError):
             return []
@@ -22,8 +22,8 @@ class AthleteRepository:
   
     def save_data(self):
         try:
-            with open(self.filename, 'w', encoding='utf-8') as file:
-                json.dump(self.athletes, file, ensure_ascii=False, indent=4)
+            with open(self.__filename, 'w', encoding='utf-8') as file:
+                json.dump(self.__athletes, file, ensure_ascii=False, indent=4)
         except IOError as e:
             print(f"Dosya kaydetme hatası: {e}")
 
@@ -38,26 +38,26 @@ class AthleteRepository:
             print(f"Hata: {data.get('athlete_id')} ID'li sporcu zaten var.")
             return
         
-        self.athletes.append(data)
+        self.__athletes.append(data)
         self.save_data()
         print(f"Repository: {data.get('name')} {data.get('surname', '')} başarıyla kaydedildi.")
 
     
     def get_by_id(self, athlete_id: int) -> Optional[dict]:
-        for athlete in self.athletes:
+        for athlete in self.__athletes:
             if str(athlete.get("athlete_id")) == str(athlete_id):
                 return athlete
         return None
 
    
     def get_all(self) -> List[dict]:
-        return self.athletes
+        return self.__athletes
 
     
     def delete_by_id(self, athlete_id: int) -> bool:
         athlete = self.get_by_id(athlete_id)
         if athlete:
-            self.athletes.remove(athlete)
+            self.__athletes.remove(athlete)
             self.save_data()
             print(f"Repository: {athlete_id} ID'li kayıt silindi.")
             return True
@@ -75,8 +75,12 @@ class AthleteRepository:
             
     
     def get_by_branch(self, branch: str) -> List[dict]:
-        return [a for a in self.athletes if a.get("sport_branch", "").lower() == branch.lower()]
+        return [a for a in self.__athletes if a.get("sport_branch", "").lower() == branch.lower()]
 
 
     def get_by_status(self, status: str) -> List[dict]:
-        return [a for a in self.athletes if a.get("status", "").lower() == status.lower()]
+        return [a for a in self.__athletes if a.get("status", "").lower() == status.lower()]
+    
+    @staticmethod
+    def get_database_info():
+        return "JSON tabanlı dosya sistemi kullanılıyor."
