@@ -5,8 +5,9 @@ import sys
 sys.path.append(os.getcwd())
 
 from modules.information.implementations import ProfessionalAthlete, AmateurAthlete, YouthAthlete
-from modules.information.repository import AthleteRepository
 from modules.information.services import AthleteService
+# YENİ: Hata sınıfını import ediyoruz ki demo sırasında yakalayabilelim
+from modules.information.errors import ClubManagerError
 
 def run_demo_scenario():
     print("================================================================")
@@ -16,12 +17,7 @@ def run_demo_scenario():
     print("[1] SİSTEM KURULUMU VE CLASS METHOD KULLANIMI")
     
     # SENARYO: Sezonluk yönetim modunu (Class Method) kullanarak sistemi başlatıyoruz.
-    # Bu özellik hocanın istediği 'Class Method' şartını sağlar.
     service = AthleteService.start_season_mode(2025)
-    
-    # Servis içindeki repository'ye erişmek için property kullanılabilir veya
-    # demo olduğu için direkt repo üzerinden işlem yapılabilir.
-    # Ancak burada servis üzerinden gidiyoruz.
     print(f"   -> Sistem 2025 sezonu için hazırlandı.\n")
 
     
@@ -71,43 +67,47 @@ def run_demo_scenario():
     print("-" * 75 + "\n")
 
     
-    print("[4] VERİTABANI İŞLEMLERİ (ENCAPSULATION TESTİ)")
+    print("[4] VERİTABANI İŞLEMLERİ VE HATA YÖNETİMİ")
     
-    # Servis üzerinden kayıt (Servis repository'yi gizlediği için kendi metoduyla ekliyoruz)
-    # Not: Demo'da doğrudan repo.add yapmak yerine servisi kullanmak daha doğrudur.
-    # Ancak manuel ekleme yapmak istersek, servise bir 'add_direct' metodu gerekebilir
-    # veya service.register_athlete metodu parametrelerle çalışır.
-    
-    # Burada nesneleri doğrudan repository'e eklemek için servise geçici bir erişim yolu açıyoruz
-    # (Veya service.register_athlete ile tek tek ekleyebiliriz ama nesneleri yukarıda oluşturduk)
-    
-    # Hızlı çözüm: Servis sınıfına (services.py) şu property'yi eklediğini varsayıyoruz:
-    # @property
-    # def repository(self): return self.__repository
-    
-    # EĞER services.py'ye property eklemediysen hata almamak için exception handle ediyoruz:
     try:
+        # Service içindeki repository özelliğini kullanarak ekleme yapıyoruz
         service.repository.add(pro_athlete)
         service.repository.add(amateur_athlete)
         service.repository.add(youth_athlete)
         print(f"   -> Sporcular başarıyla veritabanına kaydedildi.")
-    except AttributeError:
-        print("   UYARI: Service içinde repository gizli (private). Erişim için property eklenmeli.")
-        print("   Alternatif olarak service.register_athlete() kullanılmalı.")
+        
+        # --- YENİ: Mükerrer Kayıt Hatası Testi ---
+        print("   -> TEST: Aynı ID (101) ile tekrar ekleme deneniyor...")
+        service.repository.add(pro_athlete) # Bu hata fırlatmalı!
+        
+    except ClubManagerError as e:
+        # Hata yakalandığında program çökmez, mesaj verir
+        print(f"   [HATA YAKALANDI] {e.message}")
+        print(f"   -> Hata Kodu: {e.error_code} (Sistem çalışmaya devam ediyor.)")
 
-    print("\n[5] İŞ MANTIĞI (BUSINESS LOGIC) - STATÜ GÜNCELLEME")
-    print(f"   -> {pro_athlete.name} şu anki durumu: {pro_athlete.status}")
+    print("\n[5] İŞ MANTIĞI VE KURAL İHLALİ TESTİ")
+    print(f"   -> {pro_athlete.name} başlangıç durumu: {pro_athlete.status}")
     
-    service.update_athlete_status(101, "Injured")
+    # 1. Başarılı Güncelleme
+    service.update_athlete_status(101, "Suspended")
+    print(f"   -> Durum güncellendi: Active -> Suspended")
     
-    # Kontrol etmek için tekrar çekiyoruz
-    updated_athlete = service.search_athlete("101")
-    if updated_athlete:
-        print(f"   -> {pro_athlete.name} yeni durumu: {updated_athlete[0]['status']}")
+    # 2. Hatalı Güncelleme Denemesi (Cezalı -> Sakat yasaktır)
+    print("   -> TEST: Cezalı oyuncu 'Sakat' (Injured) statüsüne alınmaya çalışılıyor...")
+    
+    try:
+        service.update_athlete_status(101, "Injured")
+    except ClubManagerError as e:
+        print(f"   [HATA YAKALANDI] {e.message}")
+        print(f"   -> İş kuralı başarıyla korundu.")
     
     print("\n================================================================")
     print("      DEMO BAŞARIYLA TAMAMLANDI")
     print("================================================================")
+    
+    # Temizlik (Oluşan dosya silinsin)
+    if os.path.exists("athletes_2025.json"):
+        os.remove("athletes_2025.json")
 
 if __name__ == "__main__":
     run_demo_scenario()
