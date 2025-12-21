@@ -1,0 +1,47 @@
+[
+    {
+        "athlete_id": 101,
+        "name": "Cristiano",
+        "surname": "Ronaldo",
+        "age": 38,
+        "gender": "Male",
+        "height": 187,
+        "weight": 83,
+        "sport_branch": "Football",
+        "strong_side": "Right",
+        "status": "Injured",
+        "type": "ProfessionalAthlete",
+        "salary": 200000000.0,
+        "contract_end_date": "2025-06-30",
+        "total_cost": 240000000.0
+    },
+    {
+        "athlete_id": 102,
+        "name": "Local",
+        "surname": "Hero",
+        "age": 22,
+        "gender": "Male",
+        "height": 175,
+        "weight": 70,
+        "sport_branch": "Tennis",
+        "strong_side": "Right",
+        "status": "Active",
+        "type": "AmateurAthlete",
+        "licence_number": "TENNIS-TR-001"
+    },
+    {
+        "athlete_id": 103,
+        "name": "Future",
+        "surname": "Star",
+        "age": 14,
+        "gender": "Female",
+        "height": 165,
+        "weight": 55,
+        "sport_branch": "Volleyball",
+        "strong_side": "Left",
+        "status": "Active",
+        "type": "YouthAthlete",
+        "guardian_name": "Mother Star",
+        "scholarship_amount": 5000.0
+    }
+]

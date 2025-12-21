@@ -10,6 +10,11 @@ class ProfessionalAthlete(AthleteBase):
         self.__salary = salary
         self.__contract_end_date = contract_end_date    
     
+    @staticmethod
+    def calculate_tax(salary):
+        if salary > 500000: return salary * 0.20
+        return salary * 0.15
+
     # Maaşa vergi ekleyerek toplam maliyeti hesaplar
     def calculate_salary(self):
         tax = self.calculate_tax(self.__salary)
