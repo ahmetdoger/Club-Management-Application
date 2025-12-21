@@ -51,5 +51,9 @@ class InvalidCurrencyError(FinanceError):
 class InvalidDateFormatError(FinanceError):
     def __init__(self, date_str, expected_format="GG-AA-YYYY"):
         detail = f"Tarih Formatı Hatası: '{date_str}' geçersiz. Beklenen format: {expected_format}"
+<<<<<<< HEAD
         super().__init__(message=detail, error_code=1012)
 
+=======
+        super().__init__(message=detail, error_code=1012)
+>>>>>>> Financial-Management-Module
